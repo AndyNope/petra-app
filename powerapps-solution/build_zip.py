@@ -222,9 +222,6 @@ def wrap_flow_for_solution(raw: dict) -> str:
             "definition": props.get("definition", raw.get("definition", {})),
             "displayName": props.get("displayName", raw.get("name", "Petra Flow")),
             "description": props.get("description", ""),
-            "environment": {},
-            "isAuthenticationRequired": False,
-            "enabledState": "enabled",
         }
     }
     return json.dumps(wrapped, ensure_ascii=False, indent=2)

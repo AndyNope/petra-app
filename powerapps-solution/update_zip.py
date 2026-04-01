@@ -49,9 +49,6 @@ def load_flow(filename: str) -> str:
             "definition": props.get("definition", raw.get("definition", {})),
             "displayName": props.get("displayName", raw.get("name", "")),
             "description": props.get("description", ""),
-            "environment": {},
-            "isAuthenticationRequired": False,
-            "enabledState": "enabled",
         }
     }
     return json.dumps(wrapped, ensure_ascii=False, indent=2)
@@ -107,6 +104,18 @@ def patch_customizations(xml: str) -> str:
         xml = xml.replace('<Workflows></Workflows>', f'<Workflows>{workflow_xml}\n  </Workflows>')
     elif '</Workflows>' in xml:
         xml = xml.replace('</Workflows>', workflow_xml + '\n  </Workflows>')
+
+    # ConnectionReference für Dataverse hinzufügen (falls noch nicht drin)
+    conn_ref_xml = """
+  <connectionreferences>
+    <connectionreference connectionreferencelogicalname="petra_sharedcommondataserviceforapps"
+                         connectionreferencedisplayname="Petra - Microsoft Dataverse"
+                         connectorid="/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                         iscustomizable="1" statecode="0" statuscode="1" />
+  </connectionreferences>"""
+
+    if 'connectionreference' not in xml:
+        xml = xml.replace('</ImportExportXml>', conn_ref_xml + '\n</ImportExportXml>')
 
     return xml
 

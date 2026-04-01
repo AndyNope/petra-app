@@ -23,33 +23,50 @@
                   "description": "Anzahl Personen"
                 }
               },
-              "required": ["pickupZone", "passengers"]
+              "required": [
+                "pickupZone",
+                "passengers"
+              ]
             }
           }
         }
       },
       "actions": {
-
         "Zone_Index_Map_definieren": {
           "runAfter": {},
           "type": "Compose",
           "description": "Indexzuordnung der Platzkette. Niedrigerer Index = E-Seite, höherer = W-Seite.",
           "inputs": {
-            "E": 0, "F": 1, "H": 2, "I": 3,
+            "E": 0,
+            "F": 1,
+            "H": 2,
+            "I": 3,
             "A": 4,
-            "B": 5, "C": 6, "D": 7, "T": 8, "G": 9, "P": 10, "W": 11
+            "B": 5,
+            "C": 6,
+            "D": 7,
+            "T": 8,
+            "G": 9,
+            "P": 10,
+            "W": 11
           }
         },
-
         "Pickup_Index_ermitteln": {
-          "runAfter": { "Zone_Index_Map_definieren": ["Succeeded"] },
+          "runAfter": {
+            "Zone_Index_Map_definieren": [
+              "Succeeded"
+            ]
+          },
           "type": "Compose",
           "description": "Index der Abholzone aus der Map lesen.",
           "inputs": "@outputs('Zone_Index_Map_definieren')[triggerBody()?['pickupZone']]"
         },
-
         "Aktive_Taxis_laden": {
-          "runAfter": { "Pickup_Index_ermitteln": ["Succeeded"] },
+          "runAfter": {
+            "Pickup_Index_ermitteln": [
+              "Succeeded"
+            ]
+          },
           "type": "ApiConnection",
           "inputs": {
             "host": {
@@ -65,32 +82,38 @@
             }
           }
         },
-
         "Taxis_mit_Score_berechnen": {
-          "runAfter": { "Aktive_Taxis_laden": ["Succeeded"] },
+          "runAfter": {
+            "Aktive_Taxis_laden": [
+              "Succeeded"
+            ]
+          },
           "type": "Select",
           "description": "Für jedes Taxi: Distanz zur Abholzone + Seitenwechsel-Malus berechnen.",
           "inputs": {
             "from": "@body('Aktive_Taxis_laden')?['value']",
             "select": {
-              "taxiId":       "@item()?['petra_taxiid']",
-              "funkId":       "@item()?['petra_name']",
-              "position":     "@item()?['petra_position_formatted']",
-              "kapazitaet":   "@item()?['petra_capacity']",
-              "belegt":       "@item()?['petra_occupied']",
+              "taxiId": "@item()?['petra_taxiid']",
+              "funkId": "@item()?['petra_name']",
+              "position": "@item()?['petra_position_formatted']",
+              "kapazitaet": "@item()?['petra_capacity']",
+              "belegt": "@item()?['petra_occupied']",
               "freie_plaetze": "@sub(item()?['petra_capacity'], item()?['petra_occupied'])",
-              "taxi_index":   "@outputs('Zone_Index_Map_definieren')[item()?['petra_position_formatted']]",
+              "taxi_index": "@outputs('Zone_Index_Map_definieren')[item()?['petra_position_formatted']]",
               "pickup_index": "@outputs('Pickup_Index_ermitteln')",
-              "distanz":      "@abs(sub(outputs('Zone_Index_Map_definieren')[item()?['petra_position_formatted']], outputs('Pickup_Index_ermitteln')))",
-              "taxi_seite":   "@if(lessOrEquals(outputs('Zone_Index_Map_definieren')[item()?['petra_position_formatted']], 3), 'E', if(equals(outputs('Zone_Index_Map_definieren')[item()?['petra_position_formatted']], 4), 'A', 'W'))",
+              "distanz": "@abs(sub(outputs('Zone_Index_Map_definieren')[item()?['petra_position_formatted']], outputs('Pickup_Index_ermitteln')))",
+              "taxi_seite": "@if(lessOrEquals(outputs('Zone_Index_Map_definieren')[item()?['petra_position_formatted']], 3), 'E', if(equals(outputs('Zone_Index_Map_definieren')[item()?['petra_position_formatted']], 4), 'A', 'W'))",
               "pickup_seite": "@if(lessOrEquals(outputs('Pickup_Index_ermitteln'), 3), 'E', if(equals(outputs('Pickup_Index_ermitteln'), 4), 'A', 'W'))",
               "score": "@add(abs(sub(outputs('Zone_Index_Map_definieren')[item()?['petra_position_formatted']], outputs('Pickup_Index_ermitteln'))), if(not(equals(if(lessOrEquals(outputs('Zone_Index_Map_definieren')[item()?['petra_position_formatted']], 3), 'E', if(equals(outputs('Zone_Index_Map_definieren')[item()?['petra_position_formatted']], 4), 'A', 'W')), if(lessOrEquals(outputs('Pickup_Index_ermitteln'), 3), 'E', if(equals(outputs('Pickup_Index_ermitteln'), 4), 'A', 'W')))), 2, 0))"
             }
           }
         },
-
         "Nach_Score_sortieren": {
-          "runAfter": { "Taxis_mit_Score_berechnen": ["Succeeded"] },
+          "runAfter": {
+            "Taxis_mit_Score_berechnen": [
+              "Succeeded"
+            ]
+          },
           "type": "Query",
           "description": "Nur Taxis mit genug freien Plätzen filtern.",
           "inputs": {
@@ -98,9 +121,12 @@
             "where": "@greaterOrEquals(item()?['freie_plaetze'], triggerBody()?['passengers'])"
           }
         },
-
         "Bestes_Taxi_ermitteln": {
-          "runAfter": { "Nach_Score_sortieren": ["Succeeded"] },
+          "runAfter": {
+            "Nach_Score_sortieren": [
+              "Succeeded"
+            ]
+          },
           "type": "Compose",
           "description": "Alle gefilterten Taxis sortiert zurückgeben (Canvas App sortiert nach 'score').",
           "inputs": {
@@ -110,9 +136,12 @@
             "pickup_index": "@outputs('Pickup_Index_ermitteln')"
           }
         },
-
         "Ergebnis_zurueckgeben": {
-          "runAfter": { "Bestes_Taxi_ermitteln": ["Succeeded"] },
+          "runAfter": {
+            "Bestes_Taxi_ermitteln": [
+              "Succeeded"
+            ]
+          },
           "type": "Response",
           "kind": "PowerApps",
           "inputs": {
@@ -126,28 +155,43 @@
                   "items": {
                     "type": "object",
                     "properties": {
-                      "taxiId":       { "type": "string" },
-                      "funkId":       { "type": "string" },
-                      "position":     { "type": "string" },
-                      "freie_plaetze":{ "type": "integer" },
-                      "distanz":      { "type": "integer" },
-                      "score":        { "type": "number" }
+                      "taxiId": {
+                        "type": "string"
+                      },
+                      "funkId": {
+                        "type": "string"
+                      },
+                      "position": {
+                        "type": "string"
+                      },
+                      "freie_plaetze": {
+                        "type": "integer"
+                      },
+                      "distanz": {
+                        "type": "integer"
+                      },
+                      "score": {
+                        "type": "number"
+                      }
                     }
                   }
                 },
-                "pickup_zone": { "type": "string" }
+                "pickup_zone": {
+                  "type": "string"
+                }
               }
             }
           }
         }
-
       },
       "outputs": {}
     },
     "connectionReferences": {
       "shared_commondataserviceforapps": {
         "runtimeSource": "invoker",
-        "connection": {},
+        "connection": {
+          "connectionReferenceLogicalName": "petra_sharedcommondataserviceforapps"
+        },
         "api": {
           "name": "shared_commondataserviceforapps"
         }
