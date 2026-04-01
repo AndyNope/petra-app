@@ -41,6 +41,7 @@ function deployBackendPlugin() {
       console.log('  ├── index.html + assets/   <- Frontend (SPA)')
       console.log('  └── api/                   <- Backend PHP')
       console.log('\n  Hochladen: dist/* -> httpdocs/')
+      console.log('  Frontend ruft /api relativ auf — kein Domain-Eintrag noetig.')
       console.log('  Dann auf Server: httpdocs/api/.env.local mit DB-Zugangsdaten erstellen.\n')
     },
   }
