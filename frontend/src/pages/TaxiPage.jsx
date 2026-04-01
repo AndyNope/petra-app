@@ -5,7 +5,7 @@ import StatusBadge from '../components/shared/StatusBadge'
 import ErrorMessage from '../components/shared/ErrorMessage'
 import { registerTaxi, deactivateTaxi, updateTaxiPosition, getTrips, acceptTrip, completeTrip } from '../utils/api'
 import { usePolling } from '../hooks/usePolling'
-import { ZONE_LABELS, formatTime } from '../utils/constants'
+import { ZONE_LABELS, formatTime, travelMinutes } from '../utils/constants'
 
 // ---- Anmeldeformular ----
 function LoginForm({ onLogin }) {
@@ -69,9 +69,12 @@ function LoginForm({ onLogin }) {
 }
 
 // ---- Einzelner Auftrag ----
-function TripCard({ trip, taxi, onAccept, onComplete, accepting, completing }) {
+function TripCard({ trip, taxi, taxiPosition, onAccept, onComplete, accepting, completing }) {
   const [dropoffPos, setDropoffPos] = useState(trip.dropoff_zone)
   const isOwn = taxi.id === trip.taxi_id_num
+
+  // ETA: Fahrzeit vom aktuellen Taxi-Standort bis zum Abholort
+  const etaMin = travelMinutes(taxiPosition, trip.pickup_zone)
 
   return (
     <div className={`card p-4 space-y-4 ${trip.overflow_warning ? 'border-red-300 border-2' : ''}`}>
@@ -96,6 +99,17 @@ function TripCard({ trip, taxi, onAccept, onComplete, accepting, completing }) {
             <span className="text-gray-300">|</span>
             <span>{formatTime(trip.requested_at)}</span>
           </div>
+
+          {/* ETA-Anzeige */}
+          {etaMin !== null && (
+            <div className="flex items-center gap-1.5 text-sm font-semibold text-blue-700 mt-1">
+              <svg className="shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              {etaMin === 0 ? 'Bereits vor Ort' : `ca. ${etaMin} Min. bis Abholort`}
+            </div>
+          )}
         </div>
         <StatusBadge status={trip.status} overflow={trip.overflow_warning} />
       </div>
@@ -310,6 +324,7 @@ export default function TaxiPage() {
             key={trip.id}
             trip={trip}
             taxi={taxi}
+            taxiPosition={taxi.position}
             onAccept={handleAccept}
             onComplete={handleComplete}
             accepting={accepting}

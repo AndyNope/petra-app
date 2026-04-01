@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react'
-import { Send, RefreshCw, CheckCircle, Clock, MapPin, Car } from 'lucide-react'
+import { Send, RefreshCw, CheckCircle, Clock, MapPin, Car, Timer } from 'lucide-react'
 import ZoneSelect from '../components/shared/ZoneSelect'
 import StatusBadge from '../components/shared/StatusBadge'
 import ErrorMessage from '../components/shared/ErrorMessage'
 import { createTrip, getTrip } from '../utils/api'
 import { usePolling } from '../hooks/usePolling'
-import { ZONE_LABELS, formatTime } from '../utils/constants'
+import { ZONE_LABELS, formatTime, travelMinutes } from '../utils/constants'
 
 const FORM_INITIAL = {
   pickup_zone: '',
@@ -72,6 +72,11 @@ export default function EmployeePage() {
   if (trip) {
     const isTerminal = ['completed', 'cancelled'].includes(trip.status)
 
+    // ETA berechnen wenn Taxi-Position bekannt (kommt via API-Join)
+    const etaMin = trip.status === 'accepted' && trip.taxi_position
+      ? travelMinutes(trip.taxi_position, trip.pickup_zone)
+      : null
+
     let statusIcon, statusBg, statusText
     if (trip.status === 'pending') {
       statusIcon = <Clock size={28} className="text-yellow-600" />
@@ -101,8 +106,19 @@ export default function EmployeePage() {
         {!isTerminal && (
           <div className={`card border p-5 flex items-center gap-4 ${statusBg}`}>
             {statusIcon}
-            <div>
+            <div className="flex-1 min-w-0">
               <div className="font-bold text-gray-900 text-base">{statusText}</div>
+
+              {/* ETA wenn Taxi-Position vom Server bekannt */}
+              {etaMin !== null && (
+                <div className="flex items-center gap-1.5 mt-1.5 font-bold text-blue-700 text-base">
+                  <Timer size={16} />
+                  {etaMin === 0
+                    ? 'Taxi ist bereits an Ihrem Standort.'
+                    : `Eintreffen in ca. ${etaMin} Minute${etaMin !== 1 ? 'n' : ''}`}
+                </div>
+              )}
+
               {!isTerminal && (
                 <div className="text-sm text-gray-500 flex items-center gap-1.5 mt-1">
                   <RefreshCw size={12} />

@@ -84,7 +84,7 @@ try {
     // GET /api/trips/{id} - Einzelnen Auftrag abrufen
     if ($method === 'GET' && $tripId && $action === null) {
         $stmt = $pdo->prepare(
-            "SELECT t.*, tx.radio_id AS taxi_radio_id
+            "SELECT t.*, tx.radio_id AS taxi_radio_id, tx.position AS taxi_position
              FROM trips t LEFT JOIN taxis tx ON tx.id = t.taxi_id
              WHERE t.id = ?"
         );
