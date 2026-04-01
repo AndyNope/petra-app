@@ -1,0 +1,434 @@
+- TaxiScreen:
+    Properties:
+      Fill: =RGBA(241, 245, 249, 1)
+      OnVisible: |-
+        =// Offene Fahrten laden (Status = ausstehend)
+        ClearCollect(
+          colOffeneFahrten,
+          Filter(
+            petra_trips,
+            petra_status = 100000000,
+            {
+              id:         petra_tripid,
+              auftragsnr: petra_name,
+              abholzone:  petra_pickupzone_formatted,
+              zielzone:   petra_dropoffzone_formatted,
+              personen:   petra_passengers,
+              status:     petra_status
+            }
+          )
+        );
+
+        // Aktive Fahrt dieses Taxis ermitteln
+        If(
+          Not(IsBlank(gblMeineTaxi)),
+          Set(
+            gblAktiveFahrt,
+            LookUp(
+              petra_trips,
+              petra_taxi.'petra_taxiid' = gblMeineTaxi.id And petra_status = 100000001,
+              {
+                id:         petra_tripid,
+                auftragsnr: petra_name,
+                abholzone:  petra_pickupzone_formatted,
+                zielzone:   petra_dropoffzone_formatted,
+                personen:   petra_passengers
+              }
+            )
+          )
+        );
+
+    Children:
+
+    # ── Header ────────────────────────────────────────────────────────────────
+    - RectHeaderT:
+        Control: Rectangle
+        Properties:
+          X: =0
+          Y: =0
+          Width: =App.Width
+          Height: =64
+          Fill: =RGBA(21, 128, 61, 1)
+
+    - btnZurueckT:
+        Control: Button
+        Properties:
+          X: =8
+          Y: =12
+          Width: =40
+          Height: =40
+          Text: ="‹"
+          Size: =22
+          Color: =RGBA(255, 255, 255, 1)
+          Fill: =RGBA(0, 0, 0, 0)
+          BorderColor: =RGBA(0, 0, 0, 0)
+          OnSelect: =Back()
+
+    - lblHeaderT:
+        Control: Label
+        Properties:
+          X: =56
+          Y: =16
+          Width: =App.Width - 72
+          Height: =32
+          Text: ="Taxi"
+          Color: =RGBA(255, 255, 255, 1)
+          Size: =17
+          FontWeight: =FontWeight.Bold
+
+    # ── Taxi-Anmeldung / Position ──────────────────────────────────────────────
+    - lblMeinePosition:
+        Control: Label
+        Properties:
+          X: =16
+          Y: =80
+          Width: =App.Width - 32
+          Height: =28
+          Text: =If(IsBlank(gblMeineTaxi), "Funk-ID eingeben und Position wählen:", "Meine Position: Zone " & gblMeineTaxi.position)
+          Size: =14
+          FontWeight: =FontWeight.Semibold
+          Color: =RGBA(55, 65, 81, 1)
+
+    - txtFunkID:
+        Control: TextInput
+        Properties:
+          Visible: =IsBlank(gblMeineTaxi)
+          X: =16
+          Y: =112
+          Width: =App.Width - 32
+          Height: =52
+          PlaceholderText: ="Funk-ID (z.B. T1)"
+          Size: =16
+          BorderColor: =RGBA(209, 213, 219, 1)
+          BorderThickness: =2
+          RadiusTopLeft: =10
+          RadiusTopRight: =10
+          RadiusBottomLeft: =10
+          RadiusBottomRight: =10
+
+    # Positions-Raster
+    - lblPositionTitel:
+        Control: Label
+        Properties:
+          X: =16
+          Y: =If(IsBlank(gblMeineTaxi), 172, 112)
+          Width: =200
+          Height: =24
+          Text: =If(IsBlank(gblMeineTaxi), "Meine Position:", "Position aktualisieren:")
+          Size: =13
+          Color: =RGBA(107, 114, 128, 1)
+
+    - galPosition:
+        Control: Gallery
+        Properties:
+          X: =16
+          Y: =If(IsBlank(gblMeineTaxi), 196, 136)
+          Width: =App.Width - 32
+          Height: =144
+          Items: =colZonenKarte
+          Layout: =Layout.Horizontal
+          WrapCount: =4
+          TemplatePadding: =4
+          TemplateSize: =(App.Width - 32) / 4
+
+        Children:
+        - btnZonePos:
+            Control: Button
+            Properties:
+              X: =4
+              Y: =4
+              Width: =Parent.TemplateWidth - 8
+              Height: =60
+              Text: =ThisItem.z
+              Size: =16
+              FontWeight: =FontWeight.Bold
+              Fill: =If(gblMeineTaxiZone = ThisItem.z, RGBA(21,128,61,1), RGBA(255,255,255,1))
+              Color: =If(gblMeineTaxiZone = ThisItem.z, RGBA(255,255,255,1), RGBA(55,65,81,1))
+              BorderColor: =If(gblMeineTaxiZone = ThisItem.z, RGBA(21,128,61,1), RGBA(209,213,219,1))
+              BorderThickness: =2
+              RadiusTopLeft: =8
+              RadiusTopRight: =8
+              RadiusBottomLeft: =8
+              RadiusBottomRight: =8
+              OnSelect: =Set(gblMeineTaxiZone, ThisItem.z)
+
+    - btnAnmeldenOderAktualisieren:
+        Control: Button
+        Properties:
+          X: =16
+          Y: =If(IsBlank(gblMeineTaxi), 352, 292)
+          Width: =App.Width - 32
+          Height: =52
+          Text: =If(IsBlank(gblMeineTaxi), "Anmelden", "Position aktualisieren")
+          Size: =15
+          FontWeight: =FontWeight.Bold
+          Fill: =If(gblMeineTaxiZone <> "", RGBA(21,128,61,1), RGBA(156,163,175,1))
+          Color: =RGBA(255, 255, 255, 1)
+          BorderColor: =RGBA(0, 0, 0, 0)
+          RadiusTopLeft: =12
+          RadiusTopRight: =12
+          RadiusBottomLeft: =12
+          RadiusBottomRight: =12
+          DisplayMode: =If(gblMeineTaxiZone <> "", DisplayMode.Edit, DisplayMode.Disabled)
+          OnSelect: |-
+            =If(
+              IsBlank(gblMeineTaxi),
+              // Neues Taxi anlegen oder vorhandenes reaktivieren
+              Set(
+                gblMeineTaxi,
+                Patch(
+                  petra_taxis,
+                  LookUp(petra_taxis, petra_name = Trim(txtFunkID.Text)) ?? Defaults(petra_taxis),
+                  {
+                    petra_name:     Trim(txtFunkID.Text),
+                    petra_position: LookUp(colZonenKarte, z = gblMeineTaxiZone, idx),
+                    petra_active:   true,
+                    petra_occupied: 0,
+                    petra_capacity: 8,
+                    petra_lastseen: Now()
+                  }
+                )
+              ),
+              // Bestehende Position aktualisieren
+              Patch(
+                petra_taxis,
+                gblMeineTaxi,
+                {
+                  petra_position: LookUp(colZonenKarte, z = gblMeineTaxiZone, idx),
+                  petra_lastseen: Now()
+                }
+              )
+            );
+            // Offene Fahrten neu laden
+            ClearCollect(colOffeneFahrten, Filter(petra_trips, petra_status = 100000000));
+
+    # ── Aktive Fahrt ──────────────────────────────────────────────────────────
+    - RectAktiveFahrtT:
+        Control: Rectangle
+        Properties:
+          Visible: =Not(IsBlank(gblAktiveFahrt)) And Not(IsBlank(gblMeineTaxi))
+          X: =16
+          Y: =420
+          Width: =App.Width - 32
+          Height: =148
+          Fill: =RGBA(239, 246, 255, 1)
+          RadiusTopLeft: =12
+          RadiusTopRight: =12
+          RadiusBottomLeft: =12
+          RadiusBottomRight: =12
+          BorderColor: =RGBA(147, 197, 253, 1)
+          BorderThickness: =2
+
+    - lblAktivTitel:
+        Control: Label
+        Properties:
+          Visible: =Not(IsBlank(gblAktiveFahrt)) And Not(IsBlank(gblMeineTaxi))
+          X: =28
+          Y: =432
+          Width: =App.Width - 56
+          Height: =28
+          Text: ="🚕 Aktiver Auftrag"
+          Size: =15
+          FontWeight: =FontWeight.Bold
+          Color: =RGBA(29, 78, 216, 1)
+
+    - lblAktivRoute:
+        Control: Label
+        Properties:
+          Visible: =Not(IsBlank(gblAktiveFahrt)) And Not(IsBlank(gblMeineTaxi))
+          X: =28
+          Y: =462
+          Width: =App.Width - 56
+          Height: =24
+          Text: ="Zone " & gblAktiveFahrt.abholzone & " → Zone " & gblAktiveFahrt.zielzone & " · " & Text(gblAktiveFahrt.personen) & " Pers."
+          Size: =14
+          Color: =RGBA(55, 65, 81, 1)
+
+    - btnAbschliessen:
+        Control: Button
+        Properties:
+          Visible: =Not(IsBlank(gblAktiveFahrt)) And Not(IsBlank(gblMeineTaxi))
+          X: =28
+          Y: =496
+          Width: =(App.Width - 56 - 8) / 2
+          Height: =52
+          Text: ="Abschliessen"
+          Size: =14
+          FontWeight: =FontWeight.Bold
+          Fill: =RGBA(21, 128, 61, 1)
+          Color: =RGBA(255, 255, 255, 1)
+          BorderColor: =RGBA(0, 0, 0, 0)
+          RadiusTopLeft: =10
+          RadiusTopRight: =10
+          RadiusBottomLeft: =10
+          RadiusBottomRight: =10
+          OnSelect: |-
+            =Patch(
+              petra_trips,
+              gblAktiveFahrt,
+              {
+                petra_status:      100000002,
+                petra_completedat: Now()
+              }
+            );
+            Patch(
+              petra_taxis,
+              LookUp(petra_taxis, petra_taxiid = gblMeineTaxi.petra_taxiid),
+              {
+                petra_occupied: 0
+              }
+            );
+            Set(gblAktiveFahrt, Blank());
+            ClearCollect(colOffeneFahrten, Filter(petra_trips, petra_status = 100000000));
+
+    - btnStornieren:
+        Control: Button
+        Properties:
+          Visible: =Not(IsBlank(gblAktiveFahrt)) And Not(IsBlank(gblMeineTaxi))
+          X: =28 + (App.Width - 56 - 8) / 2 + 8
+          Y: =496
+          Width: =(App.Width - 56 - 8) / 2
+          Height: =52
+          Text: ="Stornieren"
+          Size: =14
+          FontWeight: =FontWeight.Bold
+          Fill: =RGBA(229, 231, 235, 1)
+          Color: =RGBA(107, 114, 128, 1)
+          BorderColor: =RGBA(0, 0, 0, 0)
+          RadiusTopLeft: =10
+          RadiusTopRight: =10
+          RadiusBottomLeft: =10
+          RadiusBottomRight: =10
+          OnSelect: |-
+            =Patch(
+              petra_trips,
+              gblAktiveFahrt,
+              {petra_status: 100000003}
+            );
+            Set(gblAktiveFahrt, Blank());
+            ClearCollect(colOffeneFahrten, Filter(petra_trips, petra_status = 100000000));
+
+    # ── Offene Fahrten-Liste ───────────────────────────────────────────────────
+    - lblOffeneTitel:
+        Control: Label
+        Properties:
+          Visible: =Not(IsBlank(gblMeineTaxi)) And IsBlank(gblAktiveFahrt)
+          X: =16
+          Y: =420
+          Width: =App.Width - 32
+          Height: =28
+          Text: ="Offene Aufträge (" & Text(CountRows(colOffeneFahrten)) & ")"
+          Size: =14
+          FontWeight: =FontWeight.Semibold
+          Color: =RGBA(55, 65, 81, 1)
+
+    - galOffeneFahrten:
+        Control: Gallery
+        Properties:
+          Visible: =Not(IsBlank(gblMeineTaxi)) And IsBlank(gblAktiveFahrt)
+          X: =0
+          Y: =452
+          Width: =App.Width
+          Height: =App.Height - 452
+          Items: =colOffeneFahrten
+          Layout: =Layout.Vertical
+          TemplatePadding: =0
+          TemplateSize: =120
+
+        Children:
+        - RectFahrtCard:
+            Control: Rectangle
+            Properties:
+              X: =16
+              Y: =8
+              Width: =App.Width - 32
+              Height: =104
+              Fill: =RGBA(255, 255, 255, 1)
+              RadiusTopLeft: =10
+              RadiusTopRight: =10
+              RadiusBottomLeft: =10
+              RadiusBottomRight: =10
+              BorderColor: =RGBA(229, 231, 235, 1)
+              BorderThickness: =1
+
+        - lblFahrtRoute:
+            Control: Label
+            Properties:
+              X: =28
+              Y: =18
+              Width: =App.Width - 56
+              Height: =28
+              Text: ="Zone " & ThisItem.abholzone & "  →  Zone " & ThisItem.zielzone
+              Size: =15
+              FontWeight: =FontWeight.Bold
+              Color: =RGBA(17, 24, 39, 1)
+
+        - lblFahrtPersonen:
+            Control: Label
+            Properties:
+              X: =28
+              Y: =46
+              Width: =200
+              Height: =24
+              Text: =Text(ThisItem.personen) & " Personen · " & ThisItem.auftragsnr
+              Size: =12
+              Color: =RGBA(107, 114, 128, 1)
+
+        - lblUeberlast:
+            Control: Label
+            Properties:
+              Visible: =ThisItem.personen > If(IsBlank(gblMeineTaxi), 8, /*gblMeineTaxi.kapazitaet*/ 8)
+              X: =28
+              Y: =46
+              Width: =200
+              Height: =24
+              Text: ="⚠️ Überlastet"
+              Size: =12
+              Color: =RGBA(220, 38, 38, 1)
+
+        - btnAnnehmen:
+            Control: Button
+            Properties:
+              X: =App.Width - 148
+              Y: =52
+              Width: =120
+              Height: =44
+              Text: ="Annehmen"
+              Size: =14
+              FontWeight: =FontWeight.Bold
+              Fill: =RGBA(37, 99, 235, 1)
+              Color: =RGBA(255, 255, 255, 1)
+              BorderColor: =RGBA(0, 0, 0, 0)
+              RadiusTopLeft: =8
+              RadiusTopRight: =8
+              RadiusBottomLeft: =8
+              RadiusBottomRight: =8
+              OnSelect: |-
+                =// Fahrt annehmen
+                Patch(
+                  petra_trips,
+                  LookUp(petra_trips, petra_tripid = ThisItem.id),
+                  {
+                    petra_status:      100000001,
+                    petra_taxi:        LookUp(petra_taxis, petra_taxiid = gblMeineTaxi.petra_taxiid),
+                    petra_acceptedat:  Now(),
+                    petra_overflowwarning: ThisItem.personen > 8
+                  }
+                );
+                // Taxi als belegt markieren
+                Patch(
+                  petra_taxis,
+                  LookUp(petra_taxis, petra_taxiid = gblMeineTaxi.petra_taxiid),
+                  {petra_occupied: ThisItem.personen}
+                );
+                Set(
+                  gblAktiveFahrt,
+                  {
+                    id:         ThisItem.id,
+                    auftragsnr: ThisItem.auftragsnr,
+                    abholzone:  ThisItem.abholzone,
+                    zielzone:   ThisItem.zielzone,
+                    personen:   ThisItem.personen
+                  }
+                );
+                ClearCollect(colOffeneFahrten, Filter(petra_trips, petra_status = 100000000));

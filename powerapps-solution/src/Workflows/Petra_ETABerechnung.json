@@ -1,0 +1,128 @@
+{
+  "name": "Petra_ETABerechnung",
+  "properties": {
+    "displayName": "Petra – ETA-Berechnung",
+    "description": "Berechnet die geschätzte Ankunftszeit eines Taxis anhand von Start- und Zielzone. F↔E = 50 km/h, alle anderen = 30 km/h. Wird von der Canvas App aufgerufen.",
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "PowerApps",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "vonZone": {
+                  "type": "string",
+                  "description": "Startzone des Taxis"
+                },
+                "nachZone": {
+                  "type": "string",
+                  "description": "Zielzone (Abholort des Fahrgasts)"
+                }
+              },
+              "required": ["vonZone", "nachZone"]
+            }
+          }
+        }
+      },
+      "actions": {
+
+        "Zone_Distanzmatrix": {
+          "runAfter": {},
+          "type": "Compose",
+          "description": "Geschätzte Strecken in km zwischen Zonen (Platzkette, Faktor 1.25 für Strassen). Quelle: Karte Flughafen Zürich Vorfeld.",
+          "inputs": {
+            "E_F": 1.5,  "E_H": 3.1,  "E_I": 4.0,  "E_A": 5.2,
+            "E_B": 6.4,  "E_C": 7.8,  "E_D": 8.9,  "E_T": 10.1,
+            "E_G": 11.5, "E_P": 12.8, "E_W": 14.2,
+            "F_H": 1.6,  "F_I": 2.5,  "F_A": 3.7,
+            "F_B": 4.9,  "F_C": 6.3,  "F_D": 7.4,  "F_T": 8.6,
+            "F_G": 10.0, "F_P": 11.3, "F_W": 12.7,
+            "H_I": 0.9,  "H_A": 2.1,
+            "H_B": 3.3,  "H_C": 4.7,  "H_D": 5.8,  "H_T": 7.0,
+            "H_G": 8.4,  "H_P": 9.7,  "H_W": 11.1,
+            "I_A": 1.2,
+            "I_B": 2.4,  "I_C": 3.8,  "I_D": 4.9,  "I_T": 6.1,
+            "I_G": 7.5,  "I_P": 8.8,  "I_W": 10.2,
+            "A_B": 1.2,  "A_C": 2.6,  "A_D": 3.7,  "A_T": 4.9,
+            "A_G": 6.3,  "A_P": 7.6,  "A_W": 9.0,
+            "B_C": 1.4,  "B_D": 2.5,  "B_T": 3.7,
+            "B_G": 5.1,  "B_P": 6.4,  "B_W": 7.8,
+            "C_D": 1.1,  "C_T": 2.3,
+            "C_G": 3.7,  "C_P": 5.0,  "C_W": 6.4,
+            "D_T": 1.2,
+            "D_G": 2.6,  "D_P": 3.9,  "D_W": 5.3,
+            "T_G": 1.4,  "T_P": 2.7,  "T_W": 4.1,
+            "G_P": 1.3,  "G_W": 2.7,
+            "P_W": 1.4
+          }
+        },
+
+        "Distanz_ermitteln": {
+          "runAfter": { "Zone_Distanzmatrix": ["Succeeded"] },
+          "type": "Compose",
+          "description": "Schlüssel alphabetisch sortieren (z.B. 'A_E' → 'E_A' ist gleichwertig).",
+          "inputs": {
+            "von":  "@triggerBody()?['vonZone']",
+            "nach": "@triggerBody()?['nachZone']",
+            "key_normal":  "@concat(triggerBody()?['vonZone'], '_', triggerBody()?['nachZone'])",
+            "key_reverse": "@concat(triggerBody()?['nachZone'], '_', triggerBody()?['vonZone'])",
+            "distanz_km": "@if(contains(outputs('Zone_Distanzmatrix'), concat(triggerBody()?['vonZone'], '_', triggerBody()?['nachZone'])), outputs('Zone_Distanzmatrix')[concat(triggerBody()?['vonZone'], '_', triggerBody()?['nachZone'])], if(contains(outputs('Zone_Distanzmatrix'), concat(triggerBody()?['nachZone'], '_', triggerBody()?['vonZone'])), outputs('Zone_Distanzmatrix')[concat(triggerBody()?['nachZone'], '_', triggerBody()?['vonZone'])], 0))"
+          }
+        },
+
+        "Geschwindigkeit_bestimmen": {
+          "runAfter": { "Distanz_ermitteln": ["Succeeded"] },
+          "type": "Compose",
+          "description": "F↔E Abschnitt = 50 km/h (Schnellverbindung), alle anderen = 30 km/h",
+          "inputs": {
+            "kmh": "@if(or(and(equals(triggerBody()?['vonZone'], 'F'), equals(triggerBody()?['nachZone'], 'E')), and(equals(triggerBody()?['vonZone'], 'E'), equals(triggerBody()?['nachZone'], 'F'))), 50, 30)"
+          }
+        },
+
+        "ETA_berechnen": {
+          "runAfter": { "Geschwindigkeit_bestimmen": ["Succeeded"] },
+          "type": "Compose",
+          "inputs": {
+            "distanz_km":   "@outputs('Distanz_ermitteln')?['distanz_km']",
+            "geschwindigkeit_kmh": "@outputs('Geschwindigkeit_bestimmen')?['kmh']",
+            "fahrzeit_min": "@mul(div(outputs('Distanz_ermitteln')?['distanz_km'], outputs('Geschwindigkeit_bestimmen')?['kmh']), 60)",
+            "eta_gerundet": "@int(add(mul(div(outputs('Distanz_ermitteln')?['distanz_km'], outputs('Geschwindigkeit_bestimmen')?['kmh']), 60), 0.5))"
+          }
+        },
+
+        "ETA_zurueckgeben": {
+          "runAfter": { "ETA_berechnen": ["Succeeded"] },
+          "type": "Response",
+          "kind": "PowerApps",
+          "inputs": {
+            "statusCode": 200,
+            "body": {
+              "eta_minuten":        "@outputs('ETA_berechnen')?['eta_gerundet']",
+              "distanz_km":         "@outputs('ETA_berechnen')?['distanz_km']",
+              "geschwindigkeit_kmh":"@outputs('ETA_berechnen')?['geschwindigkeit_kmh']",
+              "von_zone":           "@triggerBody()?['vonZone']",
+              "nach_zone":          "@triggerBody()?['nachZone']"
+            },
+            "schema": {
+              "type": "object",
+              "properties": {
+                "eta_minuten":         { "type": "integer" },
+                "distanz_km":          { "type": "number" },
+                "geschwindigkeit_kmh": { "type": "integer" },
+                "von_zone":            { "type": "string" },
+                "nach_zone":           { "type": "string" }
+              }
+            }
+          }
+        }
+
+      },
+      "outputs": {}
+    },
+    "connectionReferences": {}
+  }
+}

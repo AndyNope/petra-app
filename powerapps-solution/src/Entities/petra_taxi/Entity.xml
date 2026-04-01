@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Entity>
+  <EntityInfo>
+    <entity Name="petra_taxi"
+            CollectionSchemaName="petra_taxis"
+            AutoRouteToOwnerQueue="0"
+            CanTriggerWorkflow="1"
+            EntityHelpUrlEnabled="0"
+            EntitySetName="petra_taxis"
+            IsActivity="0"
+            IsActivityParty="0"
+            IsBPFEntity="0"
+            IsBusinessProcessEnabled="0"
+            IsChildEntity="0"
+            IsConnectionsEnabled="0"
+            IsDocumentManagementEnabled="0"
+            IsDocumentRecommendationsEnabled="0"
+            IsDuplicateDetectionEnabled="0"
+            IsEnabledForCharts="1"
+            IsEnabledForTrace="0"
+            IsImportable="1"
+            IsInteractionCentricEnabled="0"
+            IsMailMergeEnabled="0"
+            IsMappable="1"
+            IsOfflineInMobileClient="0"
+            IsOneNoteIntegrationEnabled="0"
+            IsOptimisticConcurrencyEnabled="1"
+            IsPrivate="0"
+            IsQuickCreateEnabled="1"
+            IsReadingPaneEnabled="1"
+            IsRenameable="1"
+            IsStateModelAware="1"
+            IsValidForAdvancedFind="1"
+            IsValidForQueue="0"
+            IsVisibleInMobile="0"
+            IsVisibleInMobileClient="1"
+            OwnershipType="UserOwned"
+            RecurrenceBaseEntityLogicalName=""
+            SyncToExternalSearchIndex="0">
+      <LocalizedNames>
+        <LocalizedName description="Taxi" languagecode="1031" />
+      </LocalizedNames>
+      <LocalizedCollectionNames>
+        <LocalizedCollectionName description="Taxis" languagecode="1031" />
+      </LocalizedCollectionNames>
+      <Descriptions>
+        <Description description="Vorfeldtaxi am Flughafen Zürich" languagecode="1031" />
+      </Descriptions>
+
+      <attributes>
+
+        <!-- Primärschlüssel -->
+        <attribute PhysicalName="petra_taxiid">
+          <Type>Uniqueidentifier</Type>
+          <Name>petra_taxiid</Name>
+          <LogName>petra_taxiid</LogName>
+          <IsCustomField>1</IsCustomField>
+          <IsPrimaryId>1</IsPrimaryId>
+          <IsPrimaryName>0</IsPrimaryName>
+          <ValidForCreateApi>0</ValidForCreateApi>
+          <ValidForUpdateApi>0</ValidForUpdateApi>
+          <RequiredLevel>SystemRequired</RequiredLevel>
+          <LocalizedNames>
+            <LocalizedName description="Taxi-ID" languagecode="1031" />
+          </LocalizedNames>
+        </attribute>
+
+        <!-- Pflichtname (Dataverse-Standard) -->
+        <attribute PhysicalName="petra_name">
+          <Type>String</Type>
+          <Name>petra_name</Name>
+          <LogName>petra_name</LogName>
+          <IsCustomField>1</IsCustomField>
+          <IsPrimaryId>0</IsPrimaryId>
+          <IsPrimaryName>1</IsPrimaryName>
+          <ValidForCreateApi>1</ValidForCreateApi>
+          <ValidForUpdateApi>1</ValidForUpdateApi>
+          <RequiredLevel>ApplicationRequired</RequiredLevel>
+          <MaxLength>100</MaxLength>
+          <Format>Text</Format>
+          <ImeMode>Auto</ImeMode>
+          <LocalizedNames>
+            <LocalizedName description="Funk-ID" languagecode="1031" />
+          </LocalizedNames>
+          <Descriptions>
+            <Description description="Funk-Kennung des Taxis, z.B. T1, T2" languagecode="1031" />
+          </Descriptions>
+        </attribute>
+
+        <!-- Position (Zone) -->
+        <attribute PhysicalName="petra_position">
+          <Type>Picklist</Type>
+          <Name>petra_position</Name>
+          <LogName>petra_position</LogName>
+          <IsCustomField>1</IsCustomField>
+          <ValidForCreateApi>1</ValidForCreateApi>
+          <ValidForUpdateApi>1</ValidForUpdateApi>
+          <RequiredLevel>ApplicationRequired</RequiredLevel>
+          <OptionSetName>petra_zone</OptionSetName>
+          <LocalizedNames>
+            <LocalizedName description="Position (Zone)" languagecode="1031" />
+          </LocalizedNames>
+        </attribute>
+
+        <!-- Kapazität -->
+        <attribute PhysicalName="petra_capacity">
+          <Type>Integer</Type>
+          <Name>petra_capacity</Name>
+          <LogName>petra_capacity</LogName>
+          <IsCustomField>1</IsCustomField>
+          <ValidForCreateApi>1</ValidForCreateApi>
+          <ValidForUpdateApi>1</ValidForUpdateApi>
+          <RequiredLevel>None</RequiredLevel>
+          <DefaultValue>8</DefaultValue>
+          <MinValue>1</MinValue>
+          <MaxValue>20</MaxValue>
+          <Format>None</Format>
+          <LocalizedNames>
+            <LocalizedName description="Kapazität (Personen)" languagecode="1031" />
+          </LocalizedNames>
+        </attribute>
+
+        <!-- Belegt -->
+        <attribute PhysicalName="petra_occupied">
+          <Type>Integer</Type>
+          <Name>petra_occupied</Name>
+          <LogName>petra_occupied</LogName>
+          <IsCustomField>1</IsCustomField>
+          <ValidForCreateApi>1</ValidForCreateApi>
+          <ValidForUpdateApi>1</ValidForUpdateApi>
+          <RequiredLevel>None</RequiredLevel>
+          <DefaultValue>0</DefaultValue>
+          <MinValue>0</MinValue>
+          <MaxValue>20</MaxValue>
+          <Format>None</Format>
+          <LocalizedNames>
+            <LocalizedName description="Belegte Plätze" languagecode="1031" />
+          </LocalizedNames>
+        </attribute>
+
+        <!-- Aktiv -->
+        <attribute PhysicalName="petra_active">
+          <Type>Boolean</Type>
+          <Name>petra_active</Name>
+          <LogName>petra_active</LogName>
+          <IsCustomField>1</IsCustomField>
+          <ValidForCreateApi>1</ValidForCreateApi>
+          <ValidForUpdateApi>1</ValidForUpdateApi>
+          <RequiredLevel>None</RequiredLevel>
+          <DefaultValue>1</DefaultValue>
+          <LocalizedNames>
+            <LocalizedName description="Aktiv" languagecode="1031" />
+          </LocalizedNames>
+          <FalseOption>
+            <LocalizedLabels>
+              <LocalizedLabel description="Inaktiv" languagecode="1031" />
+            </LocalizedLabels>
+          </FalseOption>
+          <TrueOption>
+            <LocalizedLabels>
+              <LocalizedLabel description="Aktiv" languagecode="1031" />
+            </LocalizedLabels>
+          </TrueOption>
+        </attribute>
+
+        <!-- Zuletzt gesehen -->
+        <attribute PhysicalName="petra_lastseen">
+          <Type>DateTime</Type>
+          <Name>petra_lastseen</Name>
+          <LogName>petra_lastseen</LogName>
+          <IsCustomField>1</IsCustomField>
+          <ValidForCreateApi>1</ValidForCreateApi>
+          <ValidForUpdateApi>1</ValidForUpdateApi>
+          <RequiredLevel>None</RequiredLevel>
+          <Format>DateAndTime</Format>
+          <LocalizedNames>
+            <LocalizedName description="Zuletzt gesehen" languagecode="1031" />
+          </LocalizedNames>
+        </attribute>
+
+      </attributes>
+    </entity>
+  </EntityInfo>
+
+  <EntityRelationships>
+    <!-- Beziehung: petra_taxi → petra_trip (1:N) -->
+    <EntityRelationship Name="petra_taxi_petra_trip">
+      <EntityRelationshipType>OneToMany</EntityRelationshipType>
+      <IsHierarchical>0</IsHierarchical>
+      <ReferencingEntityName>petra_trip</ReferencingEntityName>
+      <ReferencedAttributeName>petra_taxiid</ReferencedAttributeName>
+      <ReferencingAttributeName>petra_taxi</ReferencingAttributeName>
+      <IsCustomRelationship>1</IsCustomRelationship>
+      <IsValidForAdvancedFind>1</IsValidForAdvancedFind>
+      <RelationshipDescription />
+      <CascadeAssign>NoCascade</CascadeAssign>
+      <CascadeDelete>RemoveLink</CascadeDelete>
+      <CascadeReparent>NoCascade</CascadeReparent>
+      <CascadeShare>NoCascade</CascadeShare>
+      <CascadeUnshare>NoCascade</CascadeUnshare>
+      <CascadeRollupView>NoCascade</CascadeRollupView>
+      <IsCustomizable>1</IsCustomizable>
+    </EntityRelationship>
+  </EntityRelationships>
+
+  <RibbonDiffXml />
+  <EntitySetName>petra_taxis</EntitySetName>
+</Entity>

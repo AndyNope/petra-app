@@ -1,0 +1,402 @@
+- DispatchScreen:
+    Properties:
+      Fill: =RGBA(241, 245, 249, 1)
+      OnVisible: |-
+        =// Alle Daten laden
+        ClearCollect(colAlleTaxis,   Filter(petra_taxis, petra_active = true));
+        ClearCollect(colAlleFahrten, Sort(petra_trips, createdon, SortOrder.Descending));
+        ClearCollect(
+          colAusstehend,
+          Filter(petra_trips, petra_status = 100000000)
+        );
+        ClearCollect(
+          colAngenommen,
+          Filter(petra_trips, petra_status = 100000001)
+        );
+        Set(gblTaxisAktiv,    CountRows(colAlleTaxis));
+        Set(gblFahrtenOffen,  CountRows(colAusstehend));
+        Set(gblFahrtenAktiv,  CountRows(colAngenommen));
+
+    Children:
+
+    # ── Header ────────────────────────────────────────────────────────────────
+    - RectHeaderD:
+        Control: Rectangle
+        Properties:
+          X: =0
+          Y: =0
+          Width: =App.Width
+          Height: =64
+          Fill: =RGBA(55, 65, 81, 1)
+
+    - btnZurueckD:
+        Control: Button
+        Properties:
+          X: =8
+          Y: =12
+          Width: =40
+          Height: =40
+          Text: ="‹"
+          Size: =22
+          Color: =RGBA(255, 255, 255, 1)
+          Fill: =RGBA(0, 0, 0, 0)
+          BorderColor: =RGBA(0, 0, 0, 0)
+          OnSelect: =Back()
+
+    - lblHeaderD:
+        Control: Label
+        Properties:
+          X: =56
+          Y: =16
+          Width: =App.Width - 120
+          Height: =32
+          Text: ="Disposition"
+          Color: =RGBA(255, 255, 255, 1)
+          Size: =17
+          FontWeight: =FontWeight.Bold
+
+    - btnAktualisieren:
+        Control: Button
+        Properties:
+          X: =App.Width - 60
+          Y: =12
+          Width: =52
+          Height: =40
+          Text: ="↻"
+          Size: =20
+          Color: =RGBA(255, 255, 255, 1)
+          Fill: =RGBA(255, 255, 255, 0.15)
+          BorderColor: =RGBA(0, 0, 0, 0)
+          RadiusTopLeft: =8
+          RadiusTopRight: =8
+          RadiusBottomLeft: =8
+          RadiusBottomRight: =8
+          OnSelect: |-
+            =ClearCollect(colAlleTaxis,   Filter(petra_taxis, petra_active = true));
+            ClearCollect(colAlleFahrten, Sort(petra_trips, createdon, SortOrder.Descending));
+            ClearCollect(colAusstehend,  Filter(petra_trips, petra_status = 100000000));
+            ClearCollect(colAngenommen,  Filter(petra_trips, petra_status = 100000001));
+            Set(gblTaxisAktiv,   CountRows(colAlleTaxis));
+            Set(gblFahrtenOffen, CountRows(colAusstehend));
+            Set(gblFahrtenAktiv, CountRows(colAngenommen));
+
+    # ── Statistik-Kacheln ─────────────────────────────────────────────────────
+    - RectStatTaxis:
+        Control: Rectangle
+        Properties:
+          X: =16
+          Y: =80
+          Width: =(App.Width - 40) / 3
+          Height: =80
+          Fill: =RGBA(255, 255, 255, 1)
+          RadiusTopLeft: =10
+          RadiusTopRight: =10
+          RadiusBottomLeft: =10
+          RadiusBottomRight: =10
+          BorderColor: =RGBA(229, 231, 235, 1)
+          BorderThickness: =1
+
+    - lblStatTaxisZahl:
+        Control: Label
+        Properties:
+          X: =16
+          Y: =90
+          Width: =(App.Width - 40) / 3
+          Height: =36
+          Text: =Text(gblTaxisAktiv)
+          Size: =28
+          FontWeight: =FontWeight.Bold
+          Align: =Align.Center
+          Color: =RGBA(17, 24, 39, 1)
+
+    - lblStatTaxisLabel:
+        Control: Label
+        Properties:
+          X: =16
+          Y: =126
+          Width: =(App.Width - 40) / 3
+          Height: =24
+          Text: ="Taxis aktiv"
+          Size: =11
+          Align: =Align.Center
+          Color: =RGBA(107, 114, 128, 1)
+
+    - RectStatOffen:
+        Control: Rectangle
+        Properties:
+          X: =16 + (App.Width - 40) / 3 + 4
+          Y: =80
+          Width: =(App.Width - 40) / 3
+          Height: =80
+          Fill: =RGBA(254, 252, 232, 1)
+          RadiusTopLeft: =10
+          RadiusTopRight: =10
+          RadiusBottomLeft: =10
+          RadiusBottomRight: =10
+          BorderColor: =RGBA(253, 230, 138, 1)
+          BorderThickness: =1
+
+    - lblStatOffenZahl:
+        Control: Label
+        Properties:
+          X: =16 + (App.Width - 40) / 3 + 4
+          Y: =90
+          Width: =(App.Width - 40) / 3
+          Height: =36
+          Text: =Text(gblFahrtenOffen)
+          Size: =28
+          FontWeight: =FontWeight.Bold
+          Align: =Align.Center
+          Color: =RGBA(146, 64, 14, 1)
+
+    - lblStatOffenLabel:
+        Control: Label
+        Properties:
+          X: =16 + (App.Width - 40) / 3 + 4
+          Y: =126
+          Width: =(App.Width - 40) / 3
+          Height: =24
+          Text: ="Ausstehend"
+          Size: =11
+          Align: =Align.Center
+          Color: =RGBA(107, 114, 128, 1)
+
+    - RectStatAktiv:
+        Control: Rectangle
+        Properties:
+          X: =16 + ((App.Width - 40) / 3 + 4) * 2
+          Y: =80
+          Width: =(App.Width - 40) / 3
+          Height: =80
+          Fill: =RGBA(239, 246, 255, 1)
+          RadiusTopLeft: =10
+          RadiusTopRight: =10
+          RadiusBottomLeft: =10
+          RadiusBottomRight: =10
+          BorderColor: =RGBA(147, 197, 253, 1)
+          BorderThickness: =1
+
+    - lblStatAktivZahl:
+        Control: Label
+        Properties:
+          X: =16 + ((App.Width - 40) / 3 + 4) * 2
+          Y: =90
+          Width: =(App.Width - 40) / 3
+          Height: =36
+          Text: =Text(gblFahrtenAktiv)
+          Size: =28
+          FontWeight: =FontWeight.Bold
+          Align: =Align.Center
+          Color: =RGBA(29, 78, 216, 1)
+
+    - lblStatAktivLabel:
+        Control: Label
+        Properties:
+          X: =16 + ((App.Width - 40) / 3 + 4) * 2
+          Y: =126
+          Width: =(App.Width - 40) / 3
+          Height: =24
+          Text: ="Unterwegs"
+          Size: =11
+          Align: =Align.Center
+          Color: =RGBA(107, 114, 128, 1)
+
+    # ── Aktive Taxis (horizontale Gallery) ────────────────────────────────────
+    - lblTaxisTitel:
+        Control: Label
+        Properties:
+          X: =16
+          Y: =176
+          Width: =App.Width - 32
+          Height: =28
+          Text: ="Aktive Taxis"
+          Size: =14
+          FontWeight: =FontWeight.Semibold
+          Color: =RGBA(55, 65, 81, 1)
+
+    - galTaxis:
+        Control: Gallery
+        Properties:
+          X: =0
+          Y: =206
+          Width: =App.Width
+          Height: =88
+          Items: =colAlleTaxis
+          Layout: =Layout.Horizontal
+          TemplatePadding: =0
+          TemplateSize: =100
+
+        Children:
+        - RectTaxiChip:
+            Control: Rectangle
+            Properties:
+              X: =8
+              Y: =8
+              Width: =84
+              Height: =72
+              Fill: =RGBA(255, 255, 255, 1)
+              RadiusTopLeft: =10
+              RadiusTopRight: =10
+              RadiusBottomLeft: =10
+              RadiusBottomRight: =10
+              BorderColor: =If(ThisItem.petra_occupied > 0, RGBA(147,197,253,1), RGBA(209,213,219,1))
+              BorderThickness: =2
+
+        - lblTaxiName:
+            Control: Label
+            Properties:
+              X: =8
+              Y: =14
+              Width: =84
+              Height: =24
+              Text: =ThisItem.petra_name
+              Size: =14
+              FontWeight: =FontWeight.Bold
+              Align: =Align.Center
+              Color: =RGBA(17, 24, 39, 1)
+
+        - lblTaxiZone:
+            Control: Label
+            Properties:
+              X: =8
+              Y: =38
+              Width: =84
+              Height: =20
+              Text: ="Zone " & ThisItem.petra_position_formatted
+              Size: =12
+              Align: =Align.Center
+              Color: =RGBA(107, 114, 128, 1)
+
+        - lblTaxiBelegt:
+            Control: Label
+            Properties:
+              X: =8
+              Y: =56
+              Width: =84
+              Height: =18
+              Text: =Text(ThisItem.petra_occupied) & "/" & Text(ThisItem.petra_capacity)
+              Size: =11
+              Align: =Align.Center
+              Color: =If(ThisItem.petra_occupied > 0, RGBA(37,99,235,1), RGBA(156,163,175,1))
+
+    # ── Alle Fahrten (scrollbare Liste) ───────────────────────────────────────
+    - lblFahrtenTitel:
+        Control: Label
+        Properties:
+          X: =16
+          Y: =304
+          Width: =App.Width - 32
+          Height: =28
+          Text: ="Aktuelle Fahrten"
+          Size: =14
+          FontWeight: =FontWeight.Semibold
+          Color: =RGBA(55, 65, 81, 1)
+
+    - galAlleFahrten:
+        Control: Gallery
+        Properties:
+          X: =0
+          Y: =334
+          Width: =App.Width
+          Height: =App.Height - 334
+          Items: =colAlleFahrten
+          Layout: =Layout.Vertical
+          TemplatePadding: =0
+          TemplateSize: =88
+
+        Children:
+        - RectFahrtRow:
+            Control: Rectangle
+            Properties:
+              X: =16
+              Y: =6
+              Width: =App.Width - 32
+              Height: =76
+              Fill: =RGBA(255, 255, 255, 1)
+              RadiusTopLeft: =8
+              RadiusTopRight: =8
+              RadiusBottomLeft: =8
+              RadiusBottomRight: =8
+              BorderColor: =RGBA(229, 231, 235, 1)
+              BorderThickness: =1
+
+        - lblFahrtNr:
+            Control: Label
+            Properties:
+              X: =28
+              Y: =14
+              Width: =App.Width - 200
+              Height: =24
+              Text: =ThisItem.petra_name
+              Size: =13
+              FontWeight: =FontWeight.Bold
+              Color: =RGBA(17, 24, 39, 1)
+
+        - lblFahrtRouteD:
+            Control: Label
+            Properties:
+              X: =28
+              Y: =36
+              Width: =App.Width - 200
+              Height: =20
+              Text: =ThisItem.petra_pickupzone_formatted & " → " & ThisItem.petra_dropoffzone_formatted & " · " & Text(ThisItem.petra_passengers) & " P."
+              Size: =12
+              Color: =RGBA(107, 114, 128, 1)
+
+        - lblFahrtTaxi:
+            Control: Label
+            Properties:
+              X: =28
+              Y: =54
+              Width: =App.Width - 200
+              Height: =20
+              Text: =If(IsBlank(ThisItem.'petra_taxi'), "Kein Taxi", ThisItem.'petra_taxi_name')
+              Size: =11
+              Color: =RGBA(107, 114, 128, 1)
+
+        - RectStatusBadge:
+            Control: Rectangle
+            Properties:
+              X: =App.Width - 140
+              Y: =22
+              Width: =112
+              Height: =32
+              RadiusTopLeft: =8
+              RadiusTopRight: =8
+              RadiusBottomLeft: =8
+              RadiusBottomRight: =8
+              Fill: =Switch(
+                      ThisItem.petra_status,
+                      100000000, RGBA(254, 243, 199, 1),
+                      100000001, RGBA(219, 234, 254, 1),
+                      100000002, RGBA(209, 250, 229, 1),
+                      100000003, RGBA(243, 244, 246, 1),
+                      RGBA(243, 244, 246, 1)
+                    )
+
+        - lblStatusBadge:
+            Control: Label
+            Properties:
+              X: =App.Width - 140
+              Y: =22
+              Width: =112
+              Height: =32
+              Text: =Switch(
+                      ThisItem.petra_status,
+                      100000000, "⏳ Ausstehend",
+                      100000001, "🚕 Unterwegs",
+                      100000002, "✅ Fertig",
+                      100000003, "Storniert",
+                      ""
+                    )
+              Size: =11
+              FontWeight: =FontWeight.Semibold
+              Align: =Align.Center
+              Color: =Switch(
+                      ThisItem.petra_status,
+                      100000000, RGBA(146, 64, 14, 1),
+                      100000001, RGBA(29, 78, 216, 1),
+                      100000002, RGBA(6, 95, 70, 1),
+                      100000003, RGBA(107, 114, 128, 1),
+                      RGBA(107, 114, 128, 1)
+                    )

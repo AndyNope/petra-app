@@ -1,0 +1,37 @@
+- App:
+    Properties:
+      OnStart: |-
+        =/*
+          Petra Vorfeld Taxi — App-Initialisierung
+          Beim Start: Zonenkarte und Benutzerdaten laden
+        */
+
+        // Platzkette: E–F–H–I–A–B–C–D–T–G–P–W
+        ClearCollect(
+          colZonenKarte,
+          {z: "E", idx: 0, seite: "E"},
+          {z: "F", idx: 1, seite: "E"},
+          {z: "H", idx: 2, seite: "E"},
+          {z: "I", idx: 3, seite: "E"},
+          {z: "A", idx: 4, seite: "A"},
+          {z: "B", idx: 5, seite: "W"},
+          {z: "C", idx: 6, seite: "W"},
+          {z: "D", idx: 7, seite: "W"},
+          {z: "T", idx: 8, seite: "W"},
+          {z: "G", idx: 9, seite: "W"},
+          {z: "P", idx: 10, seite: "W"},
+          {z: "W", idx: 11, seite: "W"}
+        );
+
+        // Aktuellen Benutzer laden
+        Set(gblBenutzer, Office365Users.MyProfileV2());
+        Set(gblAnzeigename, gblBenutzer.displayName);
+
+        // Standardwerte
+        Set(gblMeineTaxi, Blank());
+        Set(gblAktiveFahrt, Blank());
+        Set(gblAbholzone, "");
+        Set(gblZielzone, "");
+        Set(gblPersonen, 1);
+
+      StartScreen: =StartScreen

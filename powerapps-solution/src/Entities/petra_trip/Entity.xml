@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Entity>
+  <EntityInfo>
+    <entity Name="petra_trip"
+            CollectionSchemaName="petra_trips"
+            AutoRouteToOwnerQueue="0"
+            CanTriggerWorkflow="1"
+            EntitySetName="petra_trips"
+            IsActivity="0"
+            IsActivityParty="0"
+            IsBPFEntity="0"
+            IsConnectionsEnabled="0"
+            IsDocumentManagementEnabled="0"
+            IsDuplicateDetectionEnabled="0"
+            IsEnabledForCharts="1"
+            IsImportable="1"
+            IsOfflineInMobileClient="0"
+            IsOneNoteIntegrationEnabled="0"
+            IsOptimisticConcurrencyEnabled="1"
+            IsPrivate="0"
+            IsQuickCreateEnabled="1"
+            IsReadingPaneEnabled="1"
+            IsRenameable="1"
+            IsStateModelAware="1"
+            IsValidForAdvancedFind="1"
+            IsValidForQueue="0"
+            IsVisibleInMobileClient="1"
+            OwnershipType="UserOwned">
+      <LocalizedNames>
+        <LocalizedName description="Fahrt" languagecode="1031" />
+      </LocalizedNames>
+      <LocalizedCollectionNames>
+        <LocalizedCollectionName description="Fahrten" languagecode="1031" />
+      </LocalizedCollectionNames>
+      <Descriptions>
+        <Description description="Fahrtauftrag für ein Vorfeldtaxi" languagecode="1031" />
+      </Descriptions>
+
+      <attributes>
+
+        <!-- Primärschlüssel -->
+        <attribute PhysicalName="petra_tripid">
+          <Type>Uniqueidentifier</Type>
+          <Name>petra_tripid</Name>
+          <LogName>petra_tripid</LogName>
+          <IsCustomField>1</IsCustomField>
+          <IsPrimaryId>1</IsPrimaryId>
+          <IsPrimaryName>0</IsPrimaryName>
+          <ValidForCreateApi>0</ValidForCreateApi>
+          <ValidForUpdateApi>0</ValidForUpdateApi>
+          <RequiredLevel>SystemRequired</RequiredLevel>
+          <LocalizedNames>
+            <LocalizedName description="Fahrt-ID" languagecode="1031" />
+          </LocalizedNames>
+        </attribute>
+
+        <!-- Auftragsnummer (Anzeigename) -->
+        <attribute PhysicalName="petra_name">
+          <Type>String</Type>
+          <Name>petra_name</Name>
+          <LogName>petra_name</LogName>
+          <IsCustomField>1</IsCustomField>
+          <IsPrimaryId>0</IsPrimaryId>
+          <IsPrimaryName>1</IsPrimaryName>
+          <ValidForCreateApi>1</ValidForCreateApi>
+          <ValidForUpdateApi>1</ValidForUpdateApi>
+          <RequiredLevel>ApplicationRequired</RequiredLevel>
+          <MaxLength>100</MaxLength>
+          <Format>Text</Format>
+          <ImeMode>Auto</ImeMode>
+          <LocalizedNames>
+            <LocalizedName description="Auftragsnummer" languagecode="1031" />
+          </LocalizedNames>
+        </attribute>
+
+        <!-- Verknüpftes Taxi -->
+        <attribute PhysicalName="petra_taxi">
+          <Type>Lookup</Type>
+          <Name>petra_taxi</Name>
+          <LogName>petra_taxi</LogName>
+          <IsCustomField>1</IsCustomField>
+          <ValidForCreateApi>1</ValidForCreateApi>
+          <ValidForUpdateApi>1</ValidForUpdateApi>
+          <RequiredLevel>None</RequiredLevel>
+          <LookupStyle>single</LookupStyle>
+          <Targets>petra_taxi</Targets>
+          <LocalizedNames>
+            <LocalizedName description="Taxi" languagecode="1031" />
+          </LocalizedNames>
+        </attribute>
+
+        <!-- Abholzone -->
+        <attribute PhysicalName="petra_pickupzone">
+          <Type>Picklist</Type>
+          <Name>petra_pickupzone</Name>
+          <LogName>petra_pickupzone</LogName>
+          <IsCustomField>1</IsCustomField>
+          <ValidForCreateApi>1</ValidForCreateApi>
+          <ValidForUpdateApi>1</ValidForUpdateApi>
+          <RequiredLevel>ApplicationRequired</RequiredLevel>
+          <OptionSetName>petra_zone</OptionSetName>
+          <LocalizedNames>
+            <LocalizedName description="Abholzone" languagecode="1031" />
+          </LocalizedNames>
+        </attribute>
+
+        <!-- Zielzone -->
+        <attribute PhysicalName="petra_dropoffzone">
+          <Type>Picklist</Type>
+          <Name>petra_dropoffzone</Name>
+          <LogName>petra_dropoffzone</LogName>
+          <IsCustomField>1</IsCustomField>
+          <ValidForCreateApi>1</ValidForCreateApi>
+          <ValidForUpdateApi>1</ValidForUpdateApi>
+          <RequiredLevel>ApplicationRequired</RequiredLevel>
+          <OptionSetName>petra_zone</OptionSetName>
+          <LocalizedNames>
+            <LocalizedName description="Zielzone" languagecode="1031" />
+          </LocalizedNames>
+        </attribute>
+
+        <!-- Personenanzahl -->
+        <attribute PhysicalName="petra_passengers">
+          <Type>Integer</Type>
+          <Name>petra_passengers</Name>
+          <LogName>petra_passengers</LogName>
+          <IsCustomField>1</IsCustomField>
+          <ValidForCreateApi>1</ValidForCreateApi>
+          <ValidForUpdateApi>1</ValidForUpdateApi>
+          <RequiredLevel>ApplicationRequired</RequiredLevel>
+          <DefaultValue>1</DefaultValue>
+          <MinValue>1</MinValue>
+          <MaxValue>20</MaxValue>
+          <Format>None</Format>
+          <LocalizedNames>
+            <LocalizedName description="Personenanzahl" languagecode="1031" />
+          </LocalizedNames>
+        </attribute>
+
+        <!-- Status -->
+        <attribute PhysicalName="petra_status">
+          <Type>Picklist</Type>
+          <Name>petra_status</Name>
+          <LogName>petra_status</LogName>
+          <IsCustomField>1</IsCustomField>
+          <ValidForCreateApi>1</ValidForCreateApi>
+          <ValidForUpdateApi>1</ValidForUpdateApi>
+          <RequiredLevel>ApplicationRequired</RequiredLevel>
+          <OptionSetName>petra_tripstatus</OptionSetName>
+          <DefaultValue>100000000</DefaultValue>
+          <LocalizedNames>
+            <LocalizedName description="Status" languagecode="1031" />
+          </LocalizedNames>
+        </attribute>
+
+        <!-- Überlastungswarnung -->
+        <attribute PhysicalName="petra_overflowwarning">
+          <Type>Boolean</Type>
+          <Name>petra_overflowwarning</Name>
+          <LogName>petra_overflowwarning</LogName>
+          <IsCustomField>1</IsCustomField>
+          <ValidForCreateApi>1</ValidForCreateApi>
+          <ValidForUpdateApi>1</ValidForUpdateApi>
+          <RequiredLevel>None</RequiredLevel>
+          <DefaultValue>0</DefaultValue>
+          <LocalizedNames>
+            <LocalizedName description="Überlastungswarnung" languagecode="1031" />
+          </LocalizedNames>
+          <FalseOption>
+            <LocalizedLabels>
+              <LocalizedLabel description="Nein" languagecode="1031" />
+            </LocalizedLabels>
+          </FalseOption>
+          <TrueOption>
+            <LocalizedLabels>
+              <LocalizedLabel description="Ja (Überlastet)" languagecode="1031" />
+            </LocalizedLabels>
+          </TrueOption>
+        </attribute>
+
+        <!-- Angefahren um -->
+        <attribute PhysicalName="petra_acceptedat">
+          <Type>DateTime</Type>
+          <Name>petra_acceptedat</Name>
+          <LogName>petra_acceptedat</LogName>
+          <IsCustomField>1</IsCustomField>
+          <ValidForCreateApi>1</ValidForCreateApi>
+          <ValidForUpdateApi>1</ValidForUpdateApi>
+          <RequiredLevel>None</RequiredLevel>
+          <Format>DateAndTime</Format>
+          <LocalizedNames>
+            <LocalizedName description="Angenommen um" languagecode="1031" />
+          </LocalizedNames>
+        </attribute>
+
+        <!-- Abgeschlossen um -->
+        <attribute PhysicalName="petra_completedat">
+          <Type>DateTime</Type>
+          <Name>petra_completedat</Name>
+          <LogName>petra_completedat</LogName>
+          <IsCustomField>1</IsCustomField>
+          <ValidForCreateApi>1</ValidForCreateApi>
+          <ValidForUpdateApi>1</ValidForUpdateApi>
+          <RequiredLevel>None</RequiredLevel>
+          <Format>DateAndTime</Format>
+          <LocalizedNames>
+            <LocalizedName description="Abgeschlossen um" languagecode="1031" />
+          </LocalizedNames>
+        </attribute>
+
+      </attributes>
+    </entity>
+  </EntityInfo>
+
+  <EntityRelationships />
+  <RibbonDiffXml />
+  <EntitySetName>petra_trips</EntitySetName>
+</Entity>

@@ -1,0 +1,259 @@
+- StartScreen:
+    Properties:
+      Fill: =RGBA(241, 245, 249, 1)
+
+    Children:
+
+    # ── Header ────────────────────────────────────────────────────────────────
+    - RectHeader:
+        Control: Rectangle
+        Properties:
+          X: =0
+          Y: =0
+          Width: =App.Width
+          Height: =80
+          Fill: =RGBA(30, 64, 175, 1)
+
+    - lblTitel:
+        Control: Label
+        Properties:
+          X: =16
+          Y: =20
+          Width: =App.Width - 32
+          Height: =40
+          Text: ="Vorfeld Taxi — ZRH"
+          Color: =RGBA(255, 255, 255, 1)
+          Size: =20
+          FontWeight: =FontWeight.Bold
+          Align: =Align.Left
+
+    # ── Benutzer-Begrüssung ───────────────────────────────────────────────────
+    - lblBenutzer:
+        Control: Label
+        Properties:
+          X: =16
+          Y: =104
+          Width: =App.Width - 32
+          Height: =32
+          Text: =If(IsBlank(gblAnzeigename), "Willkommen", "Hallo, " & gblAnzeigename & " 👋")
+          Size: =16
+          Color: =RGBA(55, 65, 81, 1)
+          FontWeight: =FontWeight.Semibold
+
+    - lblUntertitel:
+        Control: Label
+        Properties:
+          X: =16
+          Y: =136
+          Width: =App.Width - 32
+          Height: =24
+          Text: ="Flughafen Zürich – Ansicht wählen"
+          Size: =13
+          Color: =RGBA(107, 114, 128, 1)
+
+    # ── Rollenauswahl-Karten ──────────────────────────────────────────────────
+
+    # Mitarbeiter-Karte
+    - RectMitarbeiter:
+        Control: Rectangle
+        Properties:
+          X: =16
+          Y: =184
+          Width: =App.Width - 32
+          Height: =80
+          Fill: =RGBA(239, 246, 255, 1)
+          RadiusTopLeft: =12
+          RadiusTopRight: =12
+          RadiusBottomLeft: =12
+          RadiusBottomRight: =12
+          BorderColor: =RGBA(147, 197, 253, 1)
+          BorderThickness: =2
+
+    - lblMitarbeiterTitel:
+        Control: Label
+        Properties:
+          X: =72
+          Y: =196
+          Width: =App.Width - 104
+          Height: =28
+          Text: ="Mitarbeiter"
+          Size: =16
+          FontWeight: =FontWeight.Bold
+          Color: =RGBA(29, 78, 216, 1)
+
+    - lblMitarbeiterBeschr:
+        Control: Label
+        Properties:
+          X: =72
+          Y: =222
+          Width: =App.Width - 104
+          Height: =32
+          Text: ="Fahrt anfordern und Status verfolgen"
+          Size: =13
+          Color: =RGBA(107, 114, 128, 1)
+
+    - icnMitarbeiter:
+        Control: Icon
+        Properties:
+          X: =26
+          Y: =204
+          Width: =36
+          Height: =36
+          Icon: =Icon.People
+          Color: =RGBA(37, 99, 235, 1)
+
+    - btnMitarbeiter:
+        Control: Button
+        Properties:
+          X: =16
+          Y: =184
+          Width: =App.Width - 32
+          Height: =80
+          Fill: =RGBA(0, 0, 0, 0)
+          HoverFill: =RGBA(219, 234, 254, 0.5)
+          PressedFill: =RGBA(219, 234, 254, 1)
+          BorderColor: =RGBA(0, 0, 0, 0)
+          Color: =RGBA(0, 0, 0, 0)
+          Text: =""
+          OnSelect: =Navigate(MitarbeiterScreen, ScreenTransition.Fade)
+
+    # Taxifahrer-Karte
+    - RectTaxi:
+        Control: Rectangle
+        Properties:
+          X: =16
+          Y: =280
+          Width: =App.Width - 32
+          Height: =80
+          Fill: =RGBA(240, 253, 244, 1)
+          RadiusTopLeft: =12
+          RadiusTopRight: =12
+          RadiusBottomLeft: =12
+          RadiusBottomRight: =12
+          BorderColor: =RGBA(134, 239, 172, 1)
+          BorderThickness: =2
+
+    - lblTaxiTitel:
+        Control: Label
+        Properties:
+          X: =72
+          Y: =292
+          Width: =App.Width - 104
+          Height: =28
+          Text: ="Taxifahrer"
+          Size: =16
+          FontWeight: =FontWeight.Bold
+          Color: =RGBA(21, 128, 61, 1)
+
+    - lblTaxiBeschreibung:
+        Control: Label
+        Properties:
+          X: =72
+          Y: =318
+          Width: =App.Width - 104
+          Height: =32
+          Text: ="Standort eingeben und Aufträge annehmen"
+          Size: =13
+          Color: =RGBA(107, 114, 128, 1)
+
+    - icnTaxi:
+        Control: Icon
+        Properties:
+          X: =26
+          Y: =300
+          Width: =36
+          Height: =36
+          Icon: =Icon.Car
+          Color: =RGBA(22, 163, 74, 1)
+
+    - btnTaxi:
+        Control: Button
+        Properties:
+          X: =16
+          Y: =280
+          Width: =App.Width - 32
+          Height: =80
+          Fill: =RGBA(0, 0, 0, 0)
+          HoverFill: =RGBA(187, 247, 208, 0.5)
+          PressedFill: =RGBA(187, 247, 208, 1)
+          BorderColor: =RGBA(0, 0, 0, 0)
+          Color: =RGBA(0, 0, 0, 0)
+          Text: =""
+          OnSelect: =Navigate(TaxiScreen, ScreenTransition.Fade)
+
+    # Disposition-Karte
+    - RectDispo:
+        Control: Rectangle
+        Properties:
+          X: =16
+          Y: =376
+          Width: =App.Width - 32
+          Height: =80
+          Fill: =RGBA(249, 250, 251, 1)
+          RadiusTopLeft: =12
+          RadiusTopRight: =12
+          RadiusBottomLeft: =12
+          RadiusBottomRight: =12
+          BorderColor: =RGBA(209, 213, 219, 1)
+          BorderThickness: =2
+
+    - lblDispoTitel:
+        Control: Label
+        Properties:
+          X: =72
+          Y: =388
+          Width: =App.Width - 104
+          Height: =28
+          Text: ="Disposition"
+          Size: =16
+          FontWeight: =FontWeight.Bold
+          Color: =RGBA(55, 65, 81, 1)
+
+    - lblDispoBeschreibung:
+        Control: Label
+        Properties:
+          X: =72
+          Y: =414
+          Width: =App.Width - 104
+          Height: =32
+          Text: ="Taxis und Aufträge überwachen"
+          Size: =13
+          Color: =RGBA(107, 114, 128, 1)
+
+    - icnDispo:
+        Control: Icon
+        Properties:
+          X: =26
+          Y: =396
+          Width: =36
+          Height: =36
+          Icon: =Icon.Signal
+          Color: =RGBA(75, 85, 99, 1)
+
+    - btnDispo:
+        Control: Button
+        Properties:
+          X: =16
+          Y: =376
+          Width: =App.Width - 32
+          Height: =80
+          Fill: =RGBA(0, 0, 0, 0)
+          HoverFill: =RGBA(243, 244, 246, 0.8)
+          PressedFill: =RGBA(229, 231, 235, 1)
+          BorderColor: =RGBA(0, 0, 0, 0)
+          Color: =RGBA(0, 0, 0, 0)
+          Text: =""
+          OnSelect: =Navigate(DispatchScreen, ScreenTransition.Fade)
+
+    # ── Version ───────────────────────────────────────────────────────────────
+    - lblVersion:
+        Control: Label
+        Properties:
+          X: =0
+          Y: =App.Height - 32
+          Width: =App.Width
+          Height: =24
+          Text: ="v1.0 · Power Apps · ZRH Vorfeld"
+          Size: =11
+          Color: =RGBA(156, 163, 175, 1)
+          Align: =Align.Center

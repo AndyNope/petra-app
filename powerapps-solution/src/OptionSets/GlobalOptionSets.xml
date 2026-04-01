@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<optionsets>
+  <!-- Zone-Optionssatz: Platzkette E–F–H–I–A–B–C–D–T–G–P–W -->
+  <optionset Name="petra_zone" localizedName="Zone" IsCustomOptionSet="1" IsManaged="0" IsGlobal="1">
+    <OptionSetType>picklist</OptionSetType>
+    <IsCustomizable>1</IsCustomizable>
+    <IsExternalUserAccessEnabled>0</IsExternalUserAccessEnabled>
+    <LocalizedNames>
+      <LocalizedName description="Zone" languagecode="1031" />
+    </LocalizedNames>
+    <Descriptions>
+      <Description description="Vorfeld-Zonen am Flughafen Zürich (Platzkette)" languagecode="1031" />
+    </Descriptions>
+    <options>
+      <option value="100000000" ExternalValue="">
+        <Labels><Label description="E" languagecode="1031" /></Labels>
+      </option>
+      <option value="100000001" ExternalValue="">
+        <Labels><Label description="F" languagecode="1031" /></Labels>
+      </option>
+      <option value="100000002" ExternalValue="">
+        <Labels><Label description="H" languagecode="1031" /></Labels>
+      </option>
+      <option value="100000003" ExternalValue="">
+        <Labels><Label description="I" languagecode="1031" /></Labels>
+      </option>
+      <option value="100000004" ExternalValue="">
+        <Labels><Label description="A" languagecode="1031" /></Labels>
+      </option>
+      <option value="100000005" ExternalValue="">
+        <Labels><Label description="B" languagecode="1031" /></Labels>
+      </option>
+      <option value="100000006" ExternalValue="">
+        <Labels><Label description="C" languagecode="1031" /></Labels>
+      </option>
+      <option value="100000007" ExternalValue="">
+        <Labels><Label description="D" languagecode="1031" /></Labels>
+      </option>
+      <option value="100000008" ExternalValue="">
+        <Labels><Label description="T" languagecode="1031" /></Labels>
+      </option>
+      <option value="100000009" ExternalValue="">
+        <Labels><Label description="G" languagecode="1031" /></Labels>
+      </option>
+      <option value="100000010" ExternalValue="">
+        <Labels><Label description="P" languagecode="1031" /></Labels>
+      </option>
+      <option value="100000011" ExternalValue="">
+        <Labels><Label description="W" languagecode="1031" /></Labels>
+      </option>
+    </options>
+  </optionset>
+
+  <!-- Fahrt-Status -->
+  <optionset Name="petra_tripstatus" localizedName="Fahrt-Status" IsCustomOptionSet="1" IsManaged="0" IsGlobal="1">
+    <OptionSetType>picklist</OptionSetType>
+    <IsCustomizable>1</IsCustomizable>
+    <IsExternalUserAccessEnabled>0</IsExternalUserAccessEnabled>
+    <LocalizedNames>
+      <LocalizedName description="Fahrt-Status" languagecode="1031" />
+    </LocalizedNames>
+    <options>
+      <option value="100000000" ExternalValue="pending" color="#F59E0B">
+        <Labels><Label description="Ausstehend" languagecode="1031" /></Labels>
+      </option>
+      <option value="100000001" ExternalValue="accepted" color="#3B82F6">
+        <Labels><Label description="Angenommen" languagecode="1031" /></Labels>
+      </option>
+      <option value="100000002" ExternalValue="completed" color="#10B981">
+        <Labels><Label description="Abgeschlossen" languagecode="1031" /></Labels>
+      </option>
+      <option value="100000003" ExternalValue="cancelled" color="#6B7280">
+        <Labels><Label description="Storniert" languagecode="1031" /></Labels>
+      </option>
+    </options>
+  </optionset>
+</optionsets>

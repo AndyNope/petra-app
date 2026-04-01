@@ -1,0 +1,396 @@
+- MitarbeiterScreen:
+    Properties:
+      Fill: =RGBA(241, 245, 249, 1)
+      OnVisible: |-
+        =// Meine aktive Fahrt laden (Status = ausstehend oder angenommen)
+        Set(
+          gblMeineFahrt,
+          LookUp(
+            petra_trips,
+            petra_status = 100000000 Or petra_status = 100000001,
+            {
+              id:           petra_tripid,
+              auftragsnr:   petra_name,
+              abholzone:    petra_pickupzone,
+              zielzone:     petra_dropoffzone,
+              personen:     petra_passengers,
+              status:       petra_status,
+              statusLabel:  petra_status_formatted,
+              taxi:         petra_taxi,
+              taxiName:     petra_taxi_name
+            }
+          )
+        );
+        // Abholzone und Zielzone zurücksetzen falls keine aktive Fahrt
+        If(
+          IsBlank(gblMeineFahrt),
+          Set(gblAbholzone, "");
+          Set(gblZielzone, "");
+          Set(gblPersonen, 1)
+        );
+
+    Children:
+
+    # ── Header ────────────────────────────────────────────────────────────────
+    - RectHeaderM:
+        Control: Rectangle
+        Properties:
+          X: =0
+          Y: =0
+          Width: =App.Width
+          Height: =64
+          Fill: =RGBA(30, 64, 175, 1)
+
+    - btnZurueckM:
+        Control: Button
+        Properties:
+          X: =8
+          Y: =12
+          Width: =40
+          Height: =40
+          Text: ="‹"
+          Size: =22
+          Color: =RGBA(255, 255, 255, 1)
+          Fill: =RGBA(0, 0, 0, 0)
+          BorderColor: =RGBA(0, 0, 0, 0)
+          OnSelect: =Back()
+
+    - lblHeaderM:
+        Control: Label
+        Properties:
+          X: =56
+          Y: =16
+          Width: =App.Width - 72
+          Height: =32
+          Text: ="Fahrt anfordern"
+          Color: =RGBA(255, 255, 255, 1)
+          Size: =17
+          FontWeight: =FontWeight.Bold
+
+    # ── Aktive Fahrt (bereits unterwegs) ──────────────────────────────────────
+    - RectAktiveFahrtCard:
+        Control: Rectangle
+        Properties:
+          Visible: =Not(IsBlank(gblMeineFahrt))
+          X: =16
+          Y: =80
+          Width: =App.Width - 32
+          Height: =160
+          Fill: =If(gblMeineFahrt.status = 100000001, RGBA(239, 246, 255, 1), RGBA(254, 252, 232, 1))
+          RadiusTopLeft: =12
+          RadiusTopRight: =12
+          RadiusBottomLeft: =12
+          RadiusBottomRight: =12
+          BorderColor: =If(gblMeineFahrt.status = 100000001, RGBA(147, 197, 253, 1), RGBA(253, 230, 138, 1))
+          BorderThickness: =2
+
+    - lblAktiveFahrtTitel:
+        Control: Label
+        Properties:
+          Visible: =Not(IsBlank(gblMeineFahrt))
+          X: =28
+          Y: =92
+          Width: =App.Width - 56
+          Height: =28
+          Text: =If(gblMeineFahrt.status = 100000001, "🚕 Taxi unterwegs", "⏳ Auftrag ausstehend")
+          Size: =15
+          FontWeight: =FontWeight.Bold
+          Color: =RGBA(30, 64, 175, 1)
+
+    - lblAktiveFahrtRoute:
+        Control: Label
+        Properties:
+          Visible: =Not(IsBlank(gblMeineFahrt))
+          X: =28
+          Y: =122
+          Width: =App.Width - 56
+          Height: =24
+          Text: =If(IsBlank(gblMeineFahrt), "", "Zone " & gblMeineFahrt.abholzone & " → Zone " & gblMeineFahrt.zielzone)
+          Size: =14
+          Color: =RGBA(55, 65, 81, 1)
+
+    - lblAktiveFahrtTaxi:
+        Control: Label
+        Properties:
+          Visible: =Not(IsBlank(gblMeineFahrt)) And gblMeineFahrt.status = 100000001
+          X: =28
+          Y: =148
+          Width: =App.Width - 56
+          Height: =24
+          Text: ="Taxi: " & gblMeineFahrt.taxiName
+          Size: =13
+          Color: =RGBA(55, 65, 81, 1)
+
+    - lblAktiveFahrtETA:
+        Control: Label
+        Properties:
+          Visible: =Not(IsBlank(gblMeineFahrt)) And gblMeineFahrt.status = 100000001
+          X: =28
+          Y: =172
+          Width: =App.Width - 56
+          Height: =24
+          Text: =If(
+                  IsBlank(gblETAMin),
+                  "ETA wird berechnet…",
+                  "Eintreffen in ca. " & Text(gblETAMin) & " Min."
+                )
+          Size: =13
+          FontWeight: =FontWeight.Semibold
+          Color: =RGBA(37, 99, 235, 1)
+
+    - lblAktiveFahrtPersonen:
+        Control: Label
+        Properties:
+          Visible: =Not(IsBlank(gblMeineFahrt))
+          X: =28
+          Y: =196
+          Width: =App.Width - 56
+          Height: =24
+          Text: =Text(gblMeineFahrt.personen) & " Personen · " & gblMeineFahrt.auftragsnr
+          Size: =12
+          Color: =RGBA(107, 114, 128, 1)
+
+    # ── Neue Fahrt-Formular (nur wenn keine aktive Fahrt) ─────────────────────
+    - lblFormularTitel:
+        Control: Label
+        Properties:
+          Visible: =IsBlank(gblMeineFahrt)
+          X: =16
+          Y: =80
+          Width: =App.Width - 32
+          Height: =28
+          Text: ="Abholzone"
+          Size: =14
+          FontWeight: =FontWeight.Semibold
+          Color: =RGBA(55, 65, 81, 1)
+
+    # Abholzone – Zonenraster (12 Knöpfe à 4 pro Reihe)
+    - galAbholzone:
+        Control: Gallery
+        Properties:
+          Visible: =IsBlank(gblMeineFahrt)
+          X: =16
+          Y: =112
+          Width: =App.Width - 32
+          Height: =144
+          Items: =colZonenKarte
+          Layout: =Layout.Horizontal
+          WrapCount: =4
+          TemplatePadding: =4
+          TemplateSize: =(App.Width - 32) / 4
+
+        Children:
+        - btnZoneAbhol:
+            Control: Button
+            Properties:
+              X: =4
+              Y: =4
+              Width: =Parent.TemplateWidth - 8
+              Height: =60
+              Text: =ThisItem.z
+              Size: =16
+              FontWeight: =FontWeight.Bold
+              Fill: =If(
+                      gblAbholzone = ThisItem.z,
+                      RGBA(37, 99, 235, 1),
+                      RGBA(255, 255, 255, 1)
+                    )
+              Color: =If(gblAbholzone = ThisItem.z, RGBA(255,255,255,1), RGBA(55,65,81,1))
+              BorderColor: =If(gblAbholzone = ThisItem.z, RGBA(37,99,235,1), RGBA(209,213,219,1))
+              BorderThickness: =2
+              RadiusTopLeft: =8
+              RadiusTopRight: =8
+              RadiusBottomLeft: =8
+              RadiusBottomRight: =8
+              OnSelect: =Set(gblAbholzone, ThisItem.z)
+
+    - lblZielzoneTitel:
+        Control: Label
+        Properties:
+          Visible: =IsBlank(gblMeineFahrt)
+          X: =16
+          Y: =264
+          Width: =App.Width - 32
+          Height: =28
+          Text: ="Zielzone"
+          Size: =14
+          FontWeight: =FontWeight.Semibold
+          Color: =RGBA(55, 65, 81, 1)
+
+    # Zielzone – gleiches Raster
+    - galZielzone:
+        Control: Gallery
+        Properties:
+          Visible: =IsBlank(gblMeineFahrt)
+          X: =16
+          Y: =296
+          Width: =App.Width - 32
+          Height: =144
+          Items: =colZonenKarte
+          Layout: =Layout.Horizontal
+          WrapCount: =4
+          TemplatePadding: =4
+          TemplateSize: =(App.Width - 32) / 4
+
+        Children:
+        - btnZoneZiel:
+            Control: Button
+            Properties:
+              X: =4
+              Y: =4
+              Width: =Parent.TemplateWidth - 8
+              Height: =60
+              Text: =ThisItem.z
+              Size: =16
+              FontWeight: =FontWeight.Bold
+              Fill: =If(gblZielzone = ThisItem.z, RGBA(37,99,235,1), RGBA(255,255,255,1))
+              Color: =If(gblZielzone = ThisItem.z, RGBA(255,255,255,1), RGBA(55,65,81,1))
+              BorderColor: =If(gblZielzone = ThisItem.z, RGBA(37,99,235,1), RGBA(209,213,219,1))
+              BorderThickness: =2
+              RadiusTopLeft: =8
+              RadiusTopRight: =8
+              RadiusBottomLeft: =8
+              RadiusBottomRight: =8
+              OnSelect: =Set(gblZielzone, ThisItem.z)
+
+    # Personenanzahl Stepper
+    - lblPersonenTitel:
+        Control: Label
+        Properties:
+          Visible: =IsBlank(gblMeineFahrt)
+          X: =16
+          Y: =452
+          Width: =200
+          Height: =28
+          Text: ="Personen"
+          Size: =14
+          FontWeight: =FontWeight.Semibold
+          Color: =RGBA(55, 65, 81, 1)
+
+    - btnPersonenMinus:
+        Control: Button
+        Properties:
+          Visible: =IsBlank(gblMeineFahrt)
+          X: =16
+          Y: =484
+          Width: =60
+          Height: =60
+          Text: ="−"
+          Size: =24
+          Fill: =RGBA(229, 231, 235, 1)
+          Color: =RGBA(55, 65, 81, 1)
+          BorderColor: =RGBA(0, 0, 0, 0)
+          RadiusTopLeft: =10
+          RadiusTopRight: =10
+          RadiusBottomLeft: =10
+          RadiusBottomRight: =10
+          OnSelect: =If(gblPersonen > 1, Set(gblPersonen, gblPersonen - 1))
+
+    - lblPersonenAnzahl:
+        Control: Label
+        Properties:
+          Visible: =IsBlank(gblMeineFahrt)
+          X: =84
+          Y: =484
+          Width: =80
+          Height: =60
+          Text: =Text(gblPersonen)
+          Size: =28
+          FontWeight: =FontWeight.Bold
+          Align: =Align.Center
+          Color: =RGBA(17, 24, 39, 1)
+
+    - btnPersonenPlus:
+        Control: Button
+        Properties:
+          Visible: =IsBlank(gblMeineFahrt)
+          X: =172
+          Y: =484
+          Width: =60
+          Height: =60
+          Text: ="+"
+          Size: =24
+          Fill: =RGBA(229, 231, 235, 1)
+          Color: =RGBA(55, 65, 81, 1)
+          BorderColor: =RGBA(0, 0, 0, 0)
+          RadiusTopLeft: =10
+          RadiusTopRight: =10
+          RadiusBottomLeft: =10
+          RadiusBottomRight: =10
+          OnSelect: =If(gblPersonen < 8, Set(gblPersonen, gblPersonen + 1))
+
+    # ── Senden-Button ─────────────────────────────────────────────────────────
+    - btnFahrtAnfordern:
+        Control: Button
+        Properties:
+          Visible: =IsBlank(gblMeineFahrt)
+          X: =16
+          Y: =App.Height - 88
+          Width: =App.Width - 32
+          Height: =56
+          Text: ="Fahrt anfordern"
+          Size: =16
+          FontWeight: =FontWeight.Bold
+          Fill: =If(
+                  gblAbholzone <> "" And gblZielzone <> "" And gblAbholzone <> gblZielzone,
+                  RGBA(37, 99, 235, 1),
+                  RGBA(156, 163, 175, 1)
+                )
+          Color: =RGBA(255, 255, 255, 1)
+          BorderColor: =RGBA(0, 0, 0, 0)
+          RadiusTopLeft: =12
+          RadiusTopRight: =12
+          RadiusBottomLeft: =12
+          RadiusBottomRight: =12
+          DisplayMode: =If(
+                          gblAbholzone <> "" And gblZielzone <> "" And gblAbholzone <> gblZielzone,
+                          DisplayMode.Edit,
+                          DisplayMode.Disabled
+                        )
+          OnSelect: |-
+            =// Auftragsnummer generieren
+            Set(gblNeueAuftragsnr, "ZRH-" & Text(Now(), "YYYYMMDD-HHmm"));
+
+            // Fahrt in Dataverse anlegen
+            Patch(
+              petra_trips,
+              Defaults(petra_trips),
+              {
+                petra_name:        gblNeueAuftragsnr,
+                petra_pickupzone:  LookUp(colZonenKarte, z = gblAbholzone, idx),
+                petra_dropoffzone: LookUp(colZonenKarte, z = gblZielzone,  idx),
+                petra_passengers:  gblPersonen,
+                petra_status:      100000000
+              }
+            );
+
+            // Anzeige aktualisieren
+            Set(
+              gblMeineFahrt,
+              LookUp(
+                petra_trips,
+                petra_name = gblNeueAuftragsnr,
+                {
+                  id:          petra_tripid,
+                  auftragsnr:  petra_name,
+                  abholzone:   gblAbholzone,
+                  zielzone:    gblZielzone,
+                  personen:    gblPersonen,
+                  status:      100000000,
+                  statusLabel: "Ausstehend"
+                }
+              )
+            );
+
+    - lblValidierung:
+        Control: Label
+        Properties:
+          Visible: =IsBlank(gblMeineFahrt) And gblAbholzone <> "" And gblZielzone <> "" And gblAbholzone = gblZielzone
+          X: =16
+          Y: =App.Height - 100
+          Width: =App.Width - 32
+          Height: =20
+          Text: ="Abholzone und Zielzone dürfen nicht gleich sein."
+          Size: =12
+          Color: =RGBA(220, 38, 38, 1)
+          Align: =Align.Center

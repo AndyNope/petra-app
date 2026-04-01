@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ImportExportXml version="9.0.0.0007" SolutionPackageVersion="9.1" languagecode="1031" generatedBy="CrmLive">
+  <SolutionManifest>
+    <UniqueName>PetraVorfeldTaxi</UniqueName>
+    <LocalizedNames>
+      <LocalizedName description="Petra Vorfeld Taxi" languagecode="1031" />
+    </LocalizedNames>
+    <Descriptions>
+      <Description description="Digitales Dispositions-System für Vorfeldtaxis am Flughafen Zürich" languagecode="1031" />
+    </Descriptions>
+    <Version>1.0.0.0</Version>
+    <Managed>0</Managed>
+    <Publisher>
+      <UniqueName>PetraPublisher</UniqueName>
+      <LocalizedNames>
+        <LocalizedName description="Petra Publisher" languagecode="1031" />
+      </LocalizedNames>
+      <Descriptions />
+      <EMailAddress></EMailAddress>
+      <SupportingWebsiteUrl></SupportingWebsiteUrl>
+      <CustomizationPrefix>petra</CustomizationPrefix>
+      <CustomizationOptionValuePrefix>10000</CustomizationOptionValuePrefix>
+      <Addresses>
+        <Address>
+          <AddressNumber>1</AddressNumber>
+          <AddressTypeCode>1</AddressTypeCode>
+          <City></City>
+          <Country>Switzerland</Country>
+          <PostalCode></PostalCode>
+          <Name>Adresse 1</Name>
+          <ShippingMethodCode>1</ShippingMethodCode>
+          <TimeZoneCode>-1</TimeZoneCode>
+          <UTCOffset>0</UTCOffset>
+        </Address>
+      </Addresses>
+    </Publisher>
+    <RootComponents>
+      <!-- Dataverse Tabellen -->
+      <RootComponent type="1" schemaName="petra_taxi" behavior="0" />
+      <RootComponent type="1" schemaName="petra_trip" behavior="0" />
+      <!-- Globale Optionssätze -->
+      <RootComponent type="59" schemaName="petra_zone" behavior="0" />
+      <RootComponent type="59" schemaName="petra_tripstatus" behavior="0" />
+      <!-- Power Automate Flows -->
+      <RootComponent type="29" schemaName="Petra_DispatchAlgorithmus" behavior="0" />
+      <RootComponent type="29" schemaName="Petra_ETABerechnung" behavior="0" />
+      <!-- Canvas App -->
+      <RootComponent type="300" schemaName="PetraVorfeldTaxi" behavior="0" />
+    </RootComponents>
+    <MissingDependencies />
+  </SolutionManifest>
+</ImportExportXml>

@@ -1,0 +1,23 @@
+{
+  "id": "00000000-0000-0000-0000-000000000001",
+  "name": "PetraVorfeldTaxi",
+  "properties": {
+    "appVersion": "2025-04-01T00:00:00Z",
+    "backgroundImageUri": "",
+    "displayName": "Petra Vorfeld Taxi",
+    "description": "Dispositions-App für Vorfeldtaxis am Flughafen Zürich",
+    "tags": {
+      "primaryDeviceWidth": "640",
+      "primaryDeviceHeight": "1136",
+      "sienaVersion": "3.24048.20",
+      "deviceCapabilities": "",
+      "supportsPortrait": "true",
+      "supportsLandscape": "false",
+      "publisherVersion": "3.24048.20",
+      "minimumRequiredApiVersion": "2.2.0",
+      "hasComponent": "false",
+      "hasUnlockedComponent": "false",
+      "isUnifiedRootApp": "false"
+    }
+  }
+}
