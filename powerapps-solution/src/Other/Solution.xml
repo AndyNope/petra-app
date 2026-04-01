@@ -38,12 +38,12 @@
       <!-- Dataverse Tabellen -->
       <RootComponent type="1" schemaName="petra_taxi" behavior="0" />
       <RootComponent type="1" schemaName="petra_trip" behavior="0" />
-      <!-- Globale Optionssätze -->
-      <RootComponent type="59" schemaName="petra_zone" behavior="0" />
-      <RootComponent type="59" schemaName="petra_tripstatus" behavior="0" />
-      <!-- Power Automate Flows -->
-      <RootComponent type="29" schemaName="Petra_DispatchAlgorithmus" behavior="0" />
-      <RootComponent type="29" schemaName="Petra_ETABerechnung" behavior="0" />
+      <!-- Globale Optionssätze (type=9) -->
+      <RootComponent type="9" id="{a1b2c3d4-e5f6-7890-abcd-ef1234567805}" behavior="0" />
+      <RootComponent type="9" id="{a1b2c3d4-e5f6-7890-abcd-ef1234567806}" behavior="0" />
+      <!-- Power Automate Flows (type=29) -->
+      <RootComponent type="29" id="{a1b2c3d4-e5f6-7890-abcd-ef1234567801}" behavior="0" />
+      <RootComponent type="29" id="{a1b2c3d4-e5f6-7890-abcd-ef1234567802}" behavior="0" />
       <!-- Canvas App -->
       <RootComponent type="300" schemaName="PetraVorfeldTaxi" behavior="0" />
     </RootComponents>

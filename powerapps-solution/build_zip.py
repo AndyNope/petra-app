@@ -16,6 +16,8 @@ GUID_DISPATCH  = "a1b2c3d4-e5f6-7890-abcd-ef1234567801"
 GUID_ETA       = "a1b2c3d4-e5f6-7890-abcd-ef1234567802"
 GUID_TAXI_ENT  = "a1b2c3d4-e5f6-7890-abcd-ef1234567803"
 GUID_TRIP_ENT  = "a1b2c3d4-e5f6-7890-abcd-ef1234567804"
+GUID_OS_ZONE   = "a1b2c3d4-e5f6-7890-abcd-ef1234567805"
+GUID_OS_STATUS = "a1b2c3d4-e5f6-7890-abcd-ef1234567806"
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR    = os.path.join(SCRIPT_DIR, "src")
@@ -81,7 +83,7 @@ def customizations_xml() -> str:
   <!-- ══ Globale Optionssätze ══════════════════════════════════════════════ -->
   <optionsets>
 
-    <optionset Name="petra_zone" localizedName="Zone" IsCustomOptionSet="1" IsManaged="0" IsGlobal="1">
+    <optionset Name="petra_zone" localizedName="Zone" IsCustomOptionSet="1" IsManaged="0" IsGlobal="1" optionsetid="{{{GUID_OS_ZONE}}}">
       <OptionSetType>picklist</OptionSetType>
       <IsCustomizable>1</IsCustomizable>
       <LocalizedNames>
@@ -95,7 +97,7 @@ def customizations_xml() -> str:
       </options>
     </optionset>
 
-    <optionset Name="petra_tripstatus" localizedName="Fahrt-Status" IsCustomOptionSet="1" IsManaged="0" IsGlobal="1">
+    <optionset Name="petra_tripstatus" localizedName="Fahrt-Status" IsCustomOptionSet="1" IsManaged="0" IsGlobal="1" optionsetid="{{{GUID_OS_STATUS}}}">
       <OptionSetType>picklist</OptionSetType>
       <IsCustomizable>1</IsCustomizable>
       <LocalizedNames>
