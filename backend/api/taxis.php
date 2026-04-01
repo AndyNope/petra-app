@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../config/algorithm.php';
-require_once __DIR__ . '/../../middleware/helpers.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/algorithm.php';
+require_once __DIR__ . '/../middleware/helpers.php';
 
 setCorsHeaders();
 handlePreflight();
