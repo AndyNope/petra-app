@@ -11,26 +11,7 @@
       "triggers": {
         "manual": {
           "type": "Request",
-          "kind": "PowerApps",
-          "inputs": {
-            "schema": {
-              "type": "object",
-              "properties": {
-                "vonZone": {
-                  "type": "string",
-                  "description": "Startzone"
-                },
-                "nachZone": {
-                  "type": "string",
-                  "description": "Zielzone"
-                }
-              },
-              "required": [
-                "vonZone",
-                "nachZone"
-              ]
-            }
-          }
+          "kind": "PowerApps"
         }
       },
       "actions": {
