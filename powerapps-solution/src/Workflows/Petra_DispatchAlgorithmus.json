@@ -1,17 +1,9 @@
 {
   "name": "Petra_DispatchAlgorithmus",
   "properties": {
-    "connectionReferences": {
-      "shared_sharepointonline": {
-        "runtimeSource": "embedded",
-        "connection": {},
-        "api": {
-          "name": "shared_sharepointonline"
-        }
-      }
-    },
+    "connectionReferences": {},
     "displayName": "Petra – Dispatch-Algorithmus",
-    "description": "Sucht das optimale Taxi anhand der Platzkette E–W. Liest Taxis-Liste aus SharePoint.",
+    "description": "Berechnet das optimale Taxi anhand der Platzkette. Kein Connector noetig - Canvas App gibt Taxi-Daten direkt mit.",
     "definition": {
       "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
       "contentVersion": "1.0.0.0",
@@ -26,36 +18,51 @@
               "properties": {
                 "pickupZone": {
                   "type": "string",
-                  "description": "Abholzone (z.B. 'E', 'A', 'W')"
+                  "description": "Abholzone z.B. 'E'"
                 },
                 "passengers": {
                   "type": "integer",
                   "description": "Anzahl Personen"
+                },
+                "taxis": {
+                  "type": "array",
+                  "description": "Liste aktiver Taxis von der Canvas App: [{id, name, position, capacity, occupied}]",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "position": {
+                        "type": "string"
+                      },
+                      "capacity": {
+                        "type": "integer"
+                      },
+                      "occupied": {
+                        "type": "integer"
+                      }
+                    }
+                  }
                 }
               },
               "required": [
                 "pickupZone",
-                "passengers"
+                "passengers",
+                "taxis"
               ]
             }
           }
         }
       },
       "actions": {
-        "SharePoint_Site_URL": {
+        "Zone_Index_Map": {
           "runAfter": {},
           "type": "Compose",
-          "description": "⚠ BITTE ANPASSEN: URL deiner SharePoint-Site, z.B. https://firma.sharepoint.com/sites/taxi",
-          "inputs": "https://FIRMA.sharepoint.com/sites/DEINE_SITE"
-        },
-        "Zone_Index_Map": {
-          "runAfter": {
-            "SharePoint_Site_URL": [
-              "Succeeded"
-            ]
-          },
-          "type": "Compose",
-          "description": "Platzkette: E=0 (airside) bis W=11 (landside)",
+          "description": "Platzkette E=0 bis W=11",
           "inputs": {
             "E": 0,
             "F": 1,
@@ -71,56 +78,41 @@
             "W": 11
           }
         },
-        "Aktive_Taxis_laden": {
+        "Pickup_Index": {
           "runAfter": {
             "Zone_Index_Map": [
               "Succeeded"
             ]
           },
-          "type": "ApiConnection",
-          "inputs": {
-            "host": {
-              "connectionName": "shared_sharepointonline",
-              "operationId": "GetItems",
-              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
-            },
-            "method": "GET",
-            "path": "/datasets/@{encodeURIComponent(encodeURIComponent(outputs('SharePoint_Site_URL')))}/tables/@{encodeURIComponent(encodeURIComponent('Taxis'))}/items",
-            "queries": {
-              "$filter": "Active eq 1",
-              "$top": 50
-            }
-          }
+          "type": "Compose",
+          "inputs": "@outputs('Zone_Index_Map')[triggerBody()?['pickupZone']]"
         },
         "Taxis_mit_Score": {
           "runAfter": {
-            "Aktive_Taxis_laden": [
+            "Pickup_Index": [
               "Succeeded"
             ]
           },
           "type": "Select",
-          "description": "Berechnet Score (Distanz zur Abholzone) für jedes Taxi",
+          "description": "Score = Distanz zur Abholzone; nur Taxis mit freien Plaetzen",
           "inputs": {
-            "from": "@body('Aktive_Taxis_laden')?['value']",
+            "from": "@triggerBody()?['taxis']",
             "select": {
-              "id": "@item()?['ID']",
-              "name": "@item()?['Title']",
-              "position": "@item()?['Position']",
-              "capacity": "@item()?['Capacity']",
-              "occupied": "@item()?['Occupied']",
-              "freie_plaetze": "@sub(item()?['Capacity'], item()?['Occupied'])",
-              "score": "@abs(sub(outputs('Zone_Index_Map')[item()?['Position']], outputs('Zone_Index_Map')[triggerBody()?['pickupZone']]))"
+              "id": "@item()?['id']",
+              "name": "@item()?['name']",
+              "position": "@item()?['position']",
+              "freie_plaetze": "@sub(item()?['capacity'], item()?['occupied'])",
+              "score": "@abs(sub(outputs('Zone_Index_Map')[item()?['position']], int(outputs('Pickup_Index'))))"
             }
           }
         },
-        "Freie_Taxis_filtern": {
+        "Freie_Taxis": {
           "runAfter": {
             "Taxis_mit_Score": [
               "Succeeded"
             ]
           },
           "type": "Query",
-          "description": "Nur Taxis mit genügend freien Plätzen",
           "inputs": {
             "from": "@body('Taxis_mit_Score')",
             "where": "@greaterOrEquals(item()?['freie_plaetze'], triggerBody()?['passengers'])"
@@ -128,7 +120,7 @@
         },
         "Ergebnis": {
           "runAfter": {
-            "Freie_Taxis_filtern": [
+            "Freie_Taxis": [
               "Succeeded"
             ]
           },
@@ -137,14 +129,14 @@
           "inputs": {
             "statusCode": 200,
             "body": {
-              "taxis": "@body('Freie_Taxis_filtern')",
+              "empfehlung": "@body('Freie_Taxis')",
               "pickup_zone": "@triggerBody()?['pickupZone']",
-              "anzahl_gefunden": "@length(body('Freie_Taxis_filtern'))"
+              "anzahl_gefunden": "@length(body('Freie_Taxis'))"
             },
             "schema": {
               "type": "object",
               "properties": {
-                "taxis": {
+                "empfehlung": {
                   "type": "array"
                 },
                 "pickup_zone": {

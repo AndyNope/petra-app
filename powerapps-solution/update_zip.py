@@ -105,17 +105,7 @@ def patch_customizations(xml: str) -> str:
     elif '</Workflows>' in xml:
         xml = xml.replace('</Workflows>', workflow_xml + '\n  </Workflows>')
 
-    # ConnectionReference für SharePoint hinzufügen (Standard-Connector, kein Premium)
-    conn_ref_xml = """
-  <connectionreferences>
-    <connectionreference connectionreferencelogicalname="petra_sharedsharepoint"
-                         connectionreferencedisplayname="Petra - SharePoint"
-                         connectorid="/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
-                         iscustomizable="1" statecode="0" statuscode="1" />
-  </connectionreferences>"""
-
-    if 'connectionreference' not in xml:
-        xml = xml.replace('</ImportExportXml>', conn_ref_xml + '\n</ImportExportXml>')
+    # Keine ConnectionReferences – beide Flows brauchen keinen Connector
 
     return xml
 
