@@ -47,6 +47,7 @@ def load_flow(filename: str) -> str:
         "properties": {
             "connectionReferences": props.get("connectionReferences", {}),
             "definition": props.get("definition", raw.get("definition", {})),
+            "parameters": props.get("parameters", {}),
             "displayName": props.get("displayName", raw.get("name", "")),
             "description": props.get("description", ""),
         }
