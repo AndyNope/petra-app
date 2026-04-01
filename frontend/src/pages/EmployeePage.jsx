@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { Send, RefreshCw, CheckCircle, Clock } from 'lucide-react'
+import { Send, RefreshCw, CheckCircle, Clock, MapPin, Car } from 'lucide-react'
 import ZoneSelect from '../components/shared/ZoneSelect'
 import StatusBadge from '../components/shared/StatusBadge'
 import ErrorMessage from '../components/shared/ErrorMessage'
@@ -16,13 +16,20 @@ const FORM_INITIAL = {
 }
 
 export default function EmployeePage() {
-  const [form, setForm]         = useState(FORM_INITIAL)
-  const [submitting, setSub]    = useState(false)
-  const [error, setError]       = useState(null)
-  const [trip, setTrip]         = useState(null)   // angeforderter Auftrag
+  const [form, setForm]           = useState(FORM_INITIAL)
+  const [submitting, setSub]      = useState(false)
+  const [error, setError]         = useState(null)
+  const [trip, setTrip]           = useState(null)
   const [lastRefresh, setRefresh] = useState(null)
 
   const set = (field) => (val) => setForm((f) => ({ ...f, [field]: val }))
+
+  function stepPassengers(delta) {
+    setForm((f) => ({
+      ...f,
+      passengers: Math.min(16, Math.max(1, (f.passengers || 1) + delta)),
+    }))
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -44,14 +51,13 @@ export default function EmployeePage() {
     }
   }
 
-  // Polling fuer Statusaktualisierung (10s), nur wenn Auftrag vorhanden
   const refresh = useCallback(async () => {
     if (!trip?.id) return
     try {
       const updated = await getTrip(trip.id)
       setTrip(updated)
       setRefresh(new Date())
-    } catch { /* still polling */ }
+    } catch { /* polling weiter */ }
   }, [trip?.id])
 
   usePolling(refresh, 10000, !!trip?.id)
@@ -62,95 +68,128 @@ export default function EmployeePage() {
     setError(null)
   }
 
+  /* --- Status-Ansicht nach Absenden --- */
   if (trip) {
     const isTerminal = ['completed', 'cancelled'].includes(trip.status)
+
+    let statusIcon, statusBg, statusText
+    if (trip.status === 'pending') {
+      statusIcon = <Clock size={28} className="text-yellow-600" />
+      statusBg   = 'bg-yellow-50 border-yellow-200'
+      statusText = 'Warte auf Taxifahrer…'
+    } else if (trip.status === 'accepted') {
+      statusIcon = <Car size={28} className="text-blue-600" />
+      statusBg   = 'bg-blue-50 border-blue-200'
+      statusText = 'Taxi ist unterwegs zu Ihnen.'
+    } else if (trip.status === 'in_progress') {
+      statusIcon = <MapPin size={28} className="text-indigo-600" />
+      statusBg   = 'bg-indigo-50 border-indigo-200'
+      statusText = 'Fahrt laeuft.'
+    } else if (trip.status === 'completed') {
+      statusIcon = <CheckCircle size={28} className="text-green-600" />
+      statusBg   = 'bg-green-50 border-green-200'
+      statusText = 'Fahrt abgeschlossen. Vielen Dank!'
+    } else {
+      statusIcon = null
+      statusBg   = 'bg-gray-50 border-gray-200'
+      statusText = 'Auftrag storniert.'
+    }
+
     return (
-      <div className="max-w-lg mx-auto">
-        <div className="card p-6 space-y-5">
+      <div className="max-w-lg mx-auto space-y-4">
+        {/* Status-Banner — gross und klar lesbar */}
+        {!isTerminal && (
+          <div className={`card border p-5 flex items-center gap-4 ${statusBg}`}>
+            {statusIcon}
+            <div>
+              <div className="font-bold text-gray-900 text-base">{statusText}</div>
+              {!isTerminal && (
+                <div className="text-sm text-gray-500 flex items-center gap-1.5 mt-1">
+                  <RefreshCw size={12} />
+                  Aktualisierung alle 10 Sekunden
+                  {lastRefresh && ` — ${formatTime(lastRefresh.toISOString())}`}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Auftragsdetails */}
+        <div className="card p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Ihr Auftrag</h2>
+            <h2 className="text-base font-semibold text-gray-900">Ihr Auftrag</h2>
             <StatusBadge status={trip.status} overflow={trip.overflow_warning} />
           </div>
 
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-            <div>
-              <dt className="text-gray-500">Abholort</dt>
-              <dd className="font-medium">
+          <div className="space-y-3">
+            {/* Abholort — grosse Kachel */}
+            <div className="rounded-xl bg-gray-50 border border-gray-200 px-4 py-3">
+              <div className="text-xs text-gray-500 mb-0.5">Abholort</div>
+              <div className="font-semibold text-gray-900 text-base">
                 {trip.pickup_zone} – {ZONE_LABELS[trip.pickup_zone]}
-                {trip.pickup_detail && ` (${trip.pickup_detail})`}
-              </dd>
+              </div>
+              {trip.pickup_detail && (
+                <div className="text-sm text-gray-600">{trip.pickup_detail}</div>
+              )}
             </div>
-            <div>
-              <dt className="text-gray-500">Zielort</dt>
-              <dd className="font-medium">
+
+            {/* Zielort */}
+            <div className="rounded-xl bg-gray-50 border border-gray-200 px-4 py-3">
+              <div className="text-xs text-gray-500 mb-0.5">Zielort</div>
+              <div className="font-semibold text-gray-900 text-base">
                 {trip.dropoff_zone} – {ZONE_LABELS[trip.dropoff_zone]}
-                {trip.dropoff_detail && ` (${trip.dropoff_detail})`}
-              </dd>
+              </div>
+              {trip.dropoff_detail && (
+                <div className="text-sm text-gray-600">{trip.dropoff_detail}</div>
+              )}
             </div>
-            <div>
-              <dt className="text-gray-500">Personen</dt>
-              <dd className="font-medium">{trip.passengers}</dd>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl bg-gray-50 border border-gray-200 px-4 py-3">
+                <div className="text-xs text-gray-500 mb-0.5">Personen</div>
+                <div className="font-semibold text-gray-900 text-base">{trip.passengers}</div>
+              </div>
+              <div className="rounded-xl bg-gray-50 border border-gray-200 px-4 py-3">
+                <div className="text-xs text-gray-500 mb-0.5">Angefordert</div>
+                <div className="font-semibold text-gray-900 text-sm">{formatTime(trip.requested_at)}</div>
+              </div>
             </div>
-            <div>
-              <dt className="text-gray-500">Angefordert</dt>
-              <dd className="font-medium">{formatTime(trip.requested_at)}</dd>
-            </div>
+
             {trip.taxi_radio_id && (
-              <div className="col-span-2">
-                <dt className="text-gray-500">Taxi (Funknummer)</dt>
-                <dd className="font-medium">{trip.taxi_radio_id}</dd>
+              <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 flex items-center gap-3">
+                <Car size={20} className="text-blue-600 shrink-0" />
+                <div>
+                  <div className="text-xs text-blue-500">Zugewiesenes Taxi</div>
+                  <div className="font-bold text-blue-900 text-lg">{trip.taxi_radio_id}</div>
+                </div>
               </div>
             )}
-            {trip.accepted_at && (
-              <div>
-                <dt className="text-gray-500">Angenommen</dt>
-                <dd className="font-medium">{formatTime(trip.accepted_at)}</dd>
-              </div>
-            )}
-            {trip.completed_at && (
-              <div>
-                <dt className="text-gray-500">Abgeschlossen</dt>
-                <dd className="font-medium">{formatTime(trip.completed_at)}</dd>
-              </div>
-            )}
-          </dl>
+          </div>
 
-          {!isTerminal && (
-            <div className="flex items-center gap-1.5 text-xs text-gray-400">
-              <RefreshCw size={12} />
-              Aktualisierung alle 10 Sekunden
-              {lastRefresh && ` — zuletzt ${formatTime(lastRefresh.toISOString())}`}
+          {isTerminal && (
+            <div className={`flex items-center gap-3 p-4 rounded-xl border ${statusBg}`}>
+              {statusIcon}
+              <div className="font-semibold text-gray-800">{statusText}</div>
             </div>
           )}
 
-          {trip.status === 'pending' && (
-            <div className="flex items-center gap-2 rounded-md bg-yellow-50 border border-yellow-200 px-3 py-2 text-yellow-800 text-sm">
-              <Clock size={14} />
-              Warte auf Taxifahrer…
-            </div>
-          )}
-
-          {trip.status === 'accepted' && (
-            <div className="flex items-center gap-2 rounded-md bg-blue-50 border border-blue-200 px-3 py-2 text-blue-800 text-sm">
-              <CheckCircle size={14} />
-              Taxi ist unterwegs zu Ihnen.
-            </div>
-          )}
-
-          <button onClick={handleNewRequest} className="btn-secondary w-full justify-center">
-            Neue Anfrage
+          <button onClick={handleNewRequest} className="btn-secondary w-full">
+            Neue Anfrage stellen
           </button>
         </div>
       </div>
     )
   }
 
+  /* --- Anfrageformular --- */
   return (
     <div className="max-w-lg mx-auto">
-      <div className="card p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-5">Fahrt anfordern</h2>
+      <div className="card p-5">
+        <h2 className="text-base font-semibold text-gray-900 mb-5">Fahrt anfordern</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
+
+          {/* Abholplatz */}
           <ZoneSelect
             id="pickup"
             label="Abholplatz"
@@ -173,6 +212,7 @@ export default function EmployeePage() {
             />
           </div>
 
+          {/* Zielort */}
           <ZoneSelect
             id="dropoff"
             label="Zielort"
@@ -195,20 +235,32 @@ export default function EmployeePage() {
             />
           </div>
 
+          {/* Passagier-Stepper — grosse Buttons, kein Zahleneingabe-Zoom */}
           <div>
-            <label htmlFor="passengers" className="label">
-              Anzahl Mitfahrende (inkl. Sie)
-            </label>
-            <input
-              id="passengers"
-              type="number"
-              min={1}
-              max={16}
-              className="input"
-              value={form.passengers}
-              onChange={(e) => setForm((f) => ({ ...f, passengers: e.target.value }))}
-              required
-            />
+            <span className="label">Anzahl Mitfahrende (inkl. Sie)</span>
+            <div className="flex items-center gap-4 mt-1">
+              <button
+                type="button"
+                aria-label="Weniger"
+                onClick={() => stepPassengers(-1)}
+                disabled={form.passengers <= 1}
+                className="btn-secondary w-14 h-14 text-2xl font-bold justify-center disabled:opacity-40"
+              >
+                −
+              </button>
+              <span className="flex-1 text-center text-3xl font-bold text-gray-900 tabular-nums">
+                {form.passengers}
+              </span>
+              <button
+                type="button"
+                aria-label="Mehr"
+                onClick={() => stepPassengers(1)}
+                disabled={form.passengers >= 16}
+                className="btn-secondary w-14 h-14 text-2xl font-bold justify-center disabled:opacity-40"
+              >
+                +
+              </button>
+            </div>
           </div>
 
           <ErrorMessage message={error} />
@@ -216,9 +268,9 @@ export default function EmployeePage() {
           <button
             type="submit"
             disabled={submitting || !form.pickup_zone || !form.dropoff_zone}
-            className="btn-primary w-full justify-center"
+            className="btn-primary w-full"
           >
-            <Send size={15} />
+            <Send size={18} />
             {submitting ? 'Wird gesendet…' : 'Fahrt anfordern'}
           </button>
         </form>
