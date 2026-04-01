@@ -96,8 +96,8 @@ def solution_xml() -> str:
       </Addresses>
     </Publisher>
     <RootComponents>
-      <RootComponent type="9" id="{{{GUID_OS_ZONE}}}" behavior="0" />
-      <RootComponent type="9" id="{{{GUID_OS_STATUS}}}" behavior="0" />
+      <RootComponent type="9" schemaName="petra_zone" behavior="0" />
+      <RootComponent type="9" schemaName="petra_tripstatus" behavior="0" />
       <RootComponent type="29" id="{{{GUID_DISPATCH}}}" behavior="0" />
       <RootComponent type="29" id="{{{GUID_ETA}}}" behavior="0" />
     </RootComponents>
@@ -172,7 +172,7 @@ def customizations_xml() -> str:
   <optionsets>
 
     <optionset Name="petra_zone" localizedName="Zone" IsCustomOptionSet="1"
-               IsManaged="0" IsGlobal="1" optionsetid="{{{GUID_OS_ZONE}}}">
+               IsManaged="0" IsGlobal="1">
       <OptionSetType>picklist</OptionSetType>
       <IsCustomizable>1</IsCustomizable>
       <LocalizedNames>
@@ -185,7 +185,7 @@ def customizations_xml() -> str:
     </optionset>
 
     <optionset Name="petra_tripstatus" localizedName="Trip Status" IsCustomOptionSet="1"
-               IsManaged="0" IsGlobal="1" optionsetid="{{{GUID_OS_STATUS}}}">
+               IsManaged="0" IsGlobal="1">
       <OptionSetType>picklist</OptionSetType>
       <IsCustomizable>1</IsCustomizable>
       <LocalizedNames>
