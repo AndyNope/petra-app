@@ -105,12 +105,12 @@ def patch_customizations(xml: str) -> str:
     elif '</Workflows>' in xml:
         xml = xml.replace('</Workflows>', workflow_xml + '\n  </Workflows>')
 
-    # ConnectionReference für Dataverse hinzufügen (falls noch nicht drin)
+    # ConnectionReference für SharePoint hinzufügen (Standard-Connector, kein Premium)
     conn_ref_xml = """
   <connectionreferences>
-    <connectionreference connectionreferencelogicalname="petra_sharedcommondataserviceforapps"
-                         connectionreferencedisplayname="Petra - Microsoft Dataverse"
-                         connectorid="/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+    <connectionreference connectionreferencelogicalname="petra_sharedsharepoint"
+                         connectionreferencedisplayname="Petra - SharePoint"
+                         connectorid="/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
                          iscustomizable="1" statecode="0" statuscode="1" />
   </connectionreferences>"""
 
