@@ -1,15 +1,38 @@
+import { msalInstance } from '../auth/AuthProvider'
+import { apiScopes } from '../auth/msalConfig'
+
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
+/**
+ * Holt einen aktuellen Access Token vom MSAL-Cache (oder erneuert ihn still).
+ * Wirft einen Fehler wenn kein Account vorhanden.
+ */
+async function getAccessToken() {
+  const account = msalInstance.getAllAccounts()[0]
+  if (!account) throw new Error('Nicht angemeldet.')
+  const result = await msalInstance.acquireTokenSilent({
+    scopes: apiScopes,
+    account,
+  })
+  return result.accessToken
+}
+
 async function request(path, options = {}) {
+  const token = await getAccessToken()
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...options.headers,
+    },
     ...options,
     body: options.body ? JSON.stringify(options.body) : undefined,
   })
   const data = await res.json()
-  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
+  if (!res.ok) throw new Error(data.error || data.Error || `HTTP ${res.status}`)
   return data
 }
+
 
 // Trips
 export const createTrip = (body) => request('/trips', { method: 'POST', body })
