@@ -4,9 +4,7 @@
     "connectionReferences": {
       "shared_sharepointonline": {
         "runtimeSource": "embedded",
-        "connection": {
-          "connectionReferenceLogicalName": "petra_sharedsharepoint"
-        },
+        "connection": {},
         "api": {
           "name": "shared_sharepointonline"
         }
