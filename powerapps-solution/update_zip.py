@@ -76,24 +76,26 @@ def patch_customizations(xml: str) -> str:
         return xml  # schon drin
 
     workflow_xml = f"""
-    <Workflow WorkflowId="{{{GUID_DISPATCH}}}" Name="Petra_DispatchAlgorithmus"
-              UniqueName="Petra_DispatchAlgorithmus"
-              Category="5" Subprocess="0" Mode="0" Scope="4"
+    <Workflow WorkflowId="{{{GUID_DISPATCH}}}" Name="Petra \u2013 Dispatch-Algorithmus"
+              Category="5" Subprocess="0" Mode="0" Scope="4" PrimaryEntity="none"
               OnDemand="1" TriggerOnCreate="0" TriggerOnDelete="0"
-              AsyncAutoBulkDelete="0" StateCode="1" IsCustomizable="1">
+              TriggerOnUpdateAttributeList="" AsyncAutoBulkDelete="1"
+              StateCode="0" StatusCode="1" IsCustomizable="1"
+              SyncWorkflowLogOnFailure="0">
       <LocalizedNames>
-        <LocalizedName description="Petra - Dispatch Algorithm" languagecode="1033" />
+        <LocalizedName description="Petra \u2013 Dispatch-Algorithmus" languagecode="1033" />
       </LocalizedNames>
       <Descriptions />
       <JsonFileName>/Workflows/Petra_DispatchAlgorithmus-{GUID_DISPATCH}.json</JsonFileName>
     </Workflow>
-    <Workflow WorkflowId="{{{GUID_ETA}}}" Name="Petra_ETABerechnung"
-              UniqueName="Petra_ETABerechnung"
-              Category="5" Subprocess="0" Mode="0" Scope="4"
+    <Workflow WorkflowId="{{{GUID_ETA}}}" Name="Petra \u2013 ETA-Berechnung"
+              Category="5" Subprocess="0" Mode="0" Scope="4" PrimaryEntity="none"
               OnDemand="1" TriggerOnCreate="0" TriggerOnDelete="0"
-              AsyncAutoBulkDelete="0" StateCode="1" IsCustomizable="1">
+              TriggerOnUpdateAttributeList="" AsyncAutoBulkDelete="1"
+              StateCode="0" StatusCode="1" IsCustomizable="1"
+              SyncWorkflowLogOnFailure="0">
       <LocalizedNames>
-        <LocalizedName description="Petra - ETA Calculation" languagecode="1033" />
+        <LocalizedName description="Petra \u2013 ETA-Berechnung" languagecode="1033" />
       </LocalizedNames>
       <Descriptions />
       <JsonFileName>/Workflows/Petra_ETABerechnung-{GUID_ETA}.json</JsonFileName>
