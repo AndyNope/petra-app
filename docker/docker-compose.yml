@@ -1,0 +1,56 @@
+services:
+  db:
+    image: mariadb:10.11
+    container_name: petra_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secret
+      MYSQL_DATABASE: petra
+      MYSQL_USER: petra_user
+      MYSQL_PASSWORD: petra_pass
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../docker/Dockerfile.backend
+    container_name: petra_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_NAME: petra
+      DB_USER: petra_user
+      DB_PASS: petra_pass
+    volumes:
+      - ../backend:/var/www/html
+      - ./php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+    ports:
+      - "8080:80"
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    container_name: petra_frontend
+    restart: unless-stopped
+    volumes:
+      - ../frontend/src:/app/src
+    ports:
+      - "3000:3000"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
+volumes:
+  db_data:

@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+*.webp
+*.png
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+
+# PHP
+backend/vendor/
+
+# Docker volumes
+docker/data/
+
+# Env files mit Secrets
+.env
