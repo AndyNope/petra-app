@@ -1,0 +1,121 @@
+Screens:
+  TaxiStatusScreen:
+    Properties:
+      Fill: =RGBA(245, 247, 250, 1)
+    Children:
+      - StatusHeaderLabel:
+          Control: Label
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =80
+            Text: ="PETRA – Taxi Status"
+            Size: =22
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(0, 70, 127, 1)
+            Align: =Align.Center
+            VerticalAlign: =VerticalAlign.Middle
+      - TaxiCountLabel:
+          Control: Label
+          Properties:
+            X: =40
+            Y: =100
+            Width: =680
+            Height: =32
+            Text: ="Aktive Fahrzeuge: " & Text(CountRows(Filter(gTaxis, Active))) & " / " & Text(CountRows(gTaxis))
+            Size: =14
+            FontWeight: =FontWeight.Semibold
+            Color: =RGBA(50, 50, 50, 1)
+      - TaxiGallery:
+          Control: Gallery
+          Variant: BrowseLayout
+          Properties:
+            X: =40
+            Y: =140
+            Width: =680
+            Height: =480
+            Items: =gTaxis
+            TemplateSize: =120
+            TemplatePadding: =8
+          Children:
+            - TaxiCardRect:
+                Control: Rectangle
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =Parent.TemplateWidth
+                  Height: =Parent.TemplateHeight - 8
+                  Fill: =RGBA(255, 255, 255, 1)
+                  BorderColor: =If(ThisItem.Active, RGBA(0, 140, 60, 1), RGBA(200, 200, 200, 1))
+                  BorderThickness: =2
+                  RadiusBottomLeft: =8
+                  RadiusBottomRight: =8
+                  RadiusTopLeft: =8
+                  RadiusTopRight: =8
+            - TaxiFunkLabel:
+                Control: Label
+                Properties:
+                  X: =16
+                  Y: =10
+                  Width: =400
+                  Height: =32
+                  Text: =ThisItem.FunkID
+                  Size: =16
+                  FontWeight: =FontWeight.Bold
+                  Color: =RGBA(0, 70, 127, 1)
+            - TaxiStatusBadge:
+                Control: Label
+                Properties:
+                  X: =16
+                  Y: =46
+                  Width: =200
+                  Height: =28
+                  Text: =If(ThisItem.Active, "🟢 Aktiv", "🔴 Inaktiv")
+                  Size: =13
+                  Color: =If(ThisItem.Active, RGBA(0, 140, 60, 1), RGBA(200, 30, 30, 1))
+            - TaxiZoneLabel:
+                Control: Label
+                Properties:
+                  X: =16
+                  Y: =78
+                  Width: =300
+                  Height: =26
+                  Text: ="Zone: " & ThisItem.Position & "  |  Freie Plätze: " & Text(ThisItem.Capacity - ThisItem.Occupied)
+                  Size: =13
+                  Color: =RGBA(70, 70, 70, 1)
+      - StatusBackButton:
+          Control: Button
+          Properties:
+            X: =40
+            Y: =645
+            Width: =200
+            Height: =44
+            Text: ="← Dispatch"
+            Size: =13
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(100, 100, 180, 1)
+            HoverFill: =RGBA(120, 120, 200, 1)
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            OnSelect: =Navigate(DispatchScreen, ScreenTransition.Fade)
+      - StatusNavETAButton:
+          Control: Button
+          Properties:
+            X: =260
+            Y: =645
+            Width: =200
+            Height: =44
+            Text: ="→ ETA"
+            Size: =13
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(70, 130, 180, 1)
+            HoverFill: =RGBA(90, 150, 200, 1)
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            OnSelect: =Navigate(ETAScreen, ScreenTransition.Fade)

@@ -1,0 +1,157 @@
+Screens:
+  ETAScreen:
+    Properties:
+      Fill: =RGBA(245, 247, 250, 1)
+    Children:
+      - ETAHeaderLabel:
+          Control: Label
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =80
+            Text: ="PETRA – ETA Berechnung"
+            Size: =22
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(0, 70, 127, 1)
+            Align: =Align.Center
+            VerticalAlign: =VerticalAlign.Middle
+      - VonLabel:
+          Control: Label
+          Properties:
+            X: =40
+            Y: =110
+            Width: =300
+            Height: =36
+            Text: ="Von Zone:"
+            Size: =14
+            FontWeight: =FontWeight.Semibold
+            Color: =RGBA(50, 50, 50, 1)
+      - VonDropdown:
+          Control: Dropdown
+          Properties:
+            X: =40
+            Y: =150
+            Width: =300
+            Height: =44
+            Items: =["E","F","H","I","A","B","C","D","T","G","P","W"]
+            OnChange: =Set(gVonZone, VonDropdown.SelectedText.Value)
+            Default: ="E"
+      - NachLabel:
+          Control: Label
+          Properties:
+            X: =40
+            Y: =215
+            Width: =300
+            Height: =36
+            Text: ="Nach Zone:"
+            Size: =14
+            FontWeight: =FontWeight.Semibold
+            Color: =RGBA(50, 50, 50, 1)
+      - NachDropdown:
+          Control: Dropdown
+          Properties:
+            X: =40
+            Y: =255
+            Width: =300
+            Height: =44
+            Items: =["E","F","H","I","A","B","C","D","T","G","P","W"]
+            OnChange: =Set(gNachZone, NachDropdown.SelectedText.Value)
+            Default: ="H"
+      - ETAButton:
+          Control: Button
+          Properties:
+            X: =40
+            Y: =325
+            Width: =300
+            Height: =52
+            Text: ="⏱ ETA Berechnen"
+            Size: =15
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(0, 70, 127, 1)
+            HoverFill: =RGBA(0, 90, 160, 1)
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            OnSelect: |
+              =Set(gETAResult,
+                  Round(
+                      Abs(
+                          LookUp(gZoneMap, zone = VonDropdown.SelectedText.Value, idx) -
+                          LookUp(gZoneMap, zone = NachDropdown.SelectedText.Value, idx)
+                      ) * 0.8 / 30 * 60,
+                  0)
+              )
+      - ETAResultCard:
+          Control: Rectangle
+          Properties:
+            X: =40
+            Y: =400
+            Width: =640
+            Height: =120
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(200, 210, 220, 1)
+            BorderThickness: =1
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+      - ETARouteLabel:
+          Control: Label
+          Properties:
+            X: =60
+            Y: =415
+            Width: =600
+            Height: =30
+            Text: ="Route: Zone " & VonDropdown.SelectedText.Value & " → Zone " & NachDropdown.SelectedText.Value
+            Size: =13
+            FontWeight: =FontWeight.Semibold
+            Color: =RGBA(50, 50, 50, 1)
+      - ETAResultLabel:
+          Control: Label
+          Properties:
+            X: =60
+            Y: =451
+            Width: =600
+            Height: =52
+            Text: ="Geschätzte Fahrzeit: " & Text(gETAResult) & " Minuten"
+            Size: =18
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(0, 70, 127, 1)
+      - ETABackButton:
+          Control: Button
+          Properties:
+            X: =40
+            Y: =550
+            Width: =200
+            Height: =44
+            Text: ="← Dispatch"
+            Size: =13
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(100, 100, 180, 1)
+            HoverFill: =RGBA(120, 120, 200, 1)
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            OnSelect: =Navigate(DispatchScreen, ScreenTransition.Fade)
+      - ETANavTaxiButton:
+          Control: Button
+          Properties:
+            X: =260
+            Y: =550
+            Width: =200
+            Height: =44
+            Text: ="→ Taxi-Status"
+            Size: =13
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(70, 130, 180, 1)
+            HoverFill: =RGBA(90, 150, 200, 1)
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            OnSelect: =Navigate(TaxiStatusScreen, ScreenTransition.Fade)

@@ -1,0 +1,21 @@
+App:
+  Properties:
+    Theme: =PowerAppsTheme
+    OnStart: |
+      =// Demo-Daten für Airport Taxi Dispatch (PETRA)
+      Set(gZoneMap, Table(
+          {zone:"E",idx:0},{zone:"F",idx:1},{zone:"H",idx:2},{zone:"I",idx:3},
+          {zone:"A",idx:4},{zone:"B",idx:5},{zone:"C",idx:6},{zone:"D",idx:7},
+          {zone:"T",idx:8},{zone:"G",idx:9},{zone:"P",idx:10},{zone:"W",idx:11}
+      ));
+      ClearCollect(gTaxis, [
+          {ID:1,FunkID:"Taxi 1",Position:"E",Capacity:8,Occupied:0,Active:true},
+          {ID:2,FunkID:"Taxi 2",Position:"H",Capacity:8,Occupied:0,Active:true}
+      ]);
+      Set(gSelectedZone,"E");
+      Set(gPassengers,1);
+      Set(gBestTaxi,Blank());
+      Set(gETA,0);
+      Set(gVonZone,"E");
+      Set(gNachZone,"H");
+      Set(gETAResult,0);
