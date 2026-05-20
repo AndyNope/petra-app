@@ -1,0 +1,37 @@
+# macOS
+.DS_Store
+*.webp
+*.png
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+
+# PHP
+backend/vendor/
+
+# Docker volumes
+docker/data/
+
+# Env files mit Secrets
+.env
+
+# Power Apps debug/probe artifacts
+baseline-2screens.msapp
+baseline-published.msapp
+baseline.msapp
+labcontrols.msapp
+test.msapp
+pa.schema.yaml
+process_files.ps1
+baseline-2screens-source/
+baseline-probe-addscreen/
+baseline-probe-addscreen-unpack/
+baseline-published-source/
+baseline-source/
+labcontrols-source/
+msapp-probe/
+msapp-probe-min/
+msapp-unpack-test/
+msapp-verify/

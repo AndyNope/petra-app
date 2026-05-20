@@ -1,0 +1,1033 @@
+Screens:
+  TaxiScreen:
+    Properties:
+      Fill: =RGBA(245, 247, 250, 1)
+      OnVisible: |
+        =Set(gTaxiPositionEdit, false);
+        // Sortierten Trip-Pool aufbauen (Prioritäts-Algorithmus)
+        If(!IsBlank(gLoggedInTaxi),
+            Set(gTaxiIdx, LookUp(gZoneMap, zone = gLoggedInTaxi.Position, idx));
+            ClearCollect(gSortedTrips,
+                Sort(
+                    AddColumns(
+                        Filter(gTrips,
+                            Status = "pending" Or
+                            (Status = "accepted"    And TaxiFunkID = gLoggedInTaxi.FunkID) Or
+                            (Status = "in_progress" And TaxiFunkID = gLoggedInTaxi.FunkID)
+                        ),
+                        "Score",
+                        If(Status = "pending",
+                            Abs(LookUp(gZoneMap, zone = PickupZone, idx) - gTaxiIdx) +
+                            Min(LookUp(gZoneMap, zone = PickupZone, idx),
+                                11 - LookUp(gZoneMap, zone = PickupZone, idx)) * 0.5 +
+                            If((gTaxiIdx <= 4 And LookUp(gZoneMap, zone = PickupZone, idx) <= 4) Or
+                               (gTaxiIdx > 4  And LookUp(gZoneMap, zone = PickupZone, idx) > 4),
+                               0, 2),
+                            -1   // eigene accepted/in_progress Aufträge immer oben
+                        )
+                    ),
+                    Score,
+                    SortOrder.Ascending
+                )
+            )
+        )
+    Children:
+
+      # ── Auto-Refresh Timer (10 s) ────────────────────────────────────────────
+      - TaxiRefreshTimer:
+          Control: Timer@2.1.0
+          Properties:
+            X: =0
+            Y: =0
+            Width: =0
+            Height: =0
+            Duration: =10000
+            Repeat: =true
+            AutoStart: =true
+            Visible: =false
+            OnTimerEnd: |
+              =If(!IsBlank(gLoggedInTaxi),
+                  // ❗ Dataverse: ClearCollect(gTrips, PetraTrips)
+                  Set(gTaxiIdx, LookUp(gZoneMap, zone = gLoggedInTaxi.Position, idx));
+                  ClearCollect(gSortedTrips,
+                      Sort(
+                          AddColumns(
+                              Filter(gTrips,
+                                  Status = "pending" Or
+                                  (Status = "accepted"    And TaxiFunkID = gLoggedInTaxi.FunkID) Or
+                                  (Status = "in_progress" And TaxiFunkID = gLoggedInTaxi.FunkID)
+                              ),
+                              "Score",
+                              If(Status = "pending",
+                                  Abs(LookUp(gZoneMap, zone = PickupZone, idx) - gTaxiIdx) +
+                                  Min(LookUp(gZoneMap, zone = PickupZone, idx), 11 - LookUp(gZoneMap, zone = PickupZone, idx)) * 0.5 +
+                                  If((gTaxiIdx <= 4 And LookUp(gZoneMap, zone = PickupZone, idx) <= 4) Or
+                                     (gTaxiIdx > 4  And LookUp(gZoneMap, zone = PickupZone, idx) > 4), 0, 2),
+                                  -1
+                              )
+                          ),
+                          Score,
+                          SortOrder.Ascending
+                      )
+                  )
+              )
+
+      # ── Header ────────────────────────────────────────────────────────────────
+      - TaxiHeaderBg:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =56
+            Fill: =RGBA(0, 70, 127, 1)
+            BorderThickness: =0
+
+      - TaxiBackBtn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =8
+            Y: =8
+            Width: =44
+            Height: =40
+            Text: ="←"
+            Size: =18
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(255, 255, 255, 0.15)
+            PressedFill: =RGBA(255, 255, 255, 0.25)
+            BorderThickness: =0
+            OnSelect: |
+              =Set(gLoggedInTaxi, Blank());
+              Set(gTaxiPositionEdit, false);
+              Set(gTripToComplete, Blank());
+              Navigate(SelectRoleScreen, ScreenTransition.Fade)
+
+      - TaxiTitleLabel:
+          Control: Label@2.5.1
+          Properties:
+            X: =58
+            Y: =0
+            Width: =Parent.Width - 200
+            Height: =56
+            Text: =If(IsBlank(gLoggedInTaxi), "🚕  Taxi-Fahrer", "🚕  " & gLoggedInTaxi.FunkID)
+            Size: =18
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(255, 255, 255, 1)
+            VerticalAlign: =VerticalAlign.Middle
+
+      # Abmelden-Button (nur wenn angemeldet)
+      - TaxiLogoutBtn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =Parent.Width - 120
+            Y: =10
+            Width: =108
+            Height: =36
+            Text: ="Abmelden"
+            Size: =12
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(255, 255, 255, 0.15)
+            HoverFill: =RGBA(255, 255, 255, 0.25)
+            BorderColor: =RGBA(255, 255, 255, 0.4)
+            BorderThickness: =1
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            Visible: =!IsBlank(gLoggedInTaxi)
+            OnSelect: |
+              =// ❗ Dataverse: Patch(PetraTaxis, gLoggedInTaxi, {Active: false})
+              UpdateIf(gTaxis, ID = gLoggedInTaxi.ID, {Active: false});
+              Set(gLoggedInTaxi, Blank());
+              Set(gTaxiPositionEdit, false);
+              Set(gTripToComplete, Blank());
+              ClearCollect(gSortedTrips, [])
+
+      # ══════════════════════════════════════════════════════════════════════════
+      # ANSICHT 1: ANMELDE-FORMULAR (wenn nicht eingeloggt)
+      # ══════════════════════════════════════════════════════════════════════════
+      - LoginFormCard:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =40
+            Y: =76
+            Width: =Parent.Width - 80
+            Height: =320
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(229, 231, 235, 1)
+            BorderThickness: =1
+            Visible: =IsBlank(gLoggedInTaxi)
+
+      - LoginFormTitle:
+          Control: Label@2.5.1
+          Properties:
+            X: =56
+            Y: =92
+            Width: =Parent.Width - 112
+            Height: =30
+            Text: ="Taxi anmelden"
+            Size: =16
+            FontWeight: =FontWeight.Semibold
+            Color: =RGBA(17, 24, 39, 1)
+            VerticalAlign: =VerticalAlign.Middle
+            Visible: =IsBlank(gLoggedInTaxi)
+
+      - LoginRadioLbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =56
+            Y: =136
+            Width: =Parent.Width - 112
+            Height: =24
+            Text: ="Funknummer"
+            Size: =13
+            FontWeight: =FontWeight.Semibold
+            Color: =RGBA(55, 65, 81, 1)
+            VerticalAlign: =VerticalAlign.Middle
+            Visible: =IsBlank(gLoggedInTaxi)
+
+      - LoginRadioInput:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            X: =56
+            Y: =162
+            Width: =Parent.Width - 112
+            Height: =44
+            HintText: ="z. B. T1"
+            Size: =14
+            BorderColor: =RGBA(209, 213, 219, 1)
+            FocusedBorderColor: =RGBA(59, 130, 246, 1)
+            BorderThickness: =1
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            Visible: =IsBlank(gLoggedInTaxi)
+
+      - LoginZoneLbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =56
+            Y: =218
+            Width: =Parent.Width - 112
+            Height: =24
+            Text: ="Aktueller Standort"
+            Size: =13
+            FontWeight: =FontWeight.Semibold
+            Color: =RGBA(55, 65, 81, 1)
+            VerticalAlign: =VerticalAlign.Middle
+            Visible: =IsBlank(gLoggedInTaxi)
+
+      - LoginZoneDropdown:
+          Control: Classic/DropDown@2.3.1
+          Properties:
+            X: =56
+            Y: =244
+            Width: =Parent.Width - 112
+            Height: =44
+            Items: =["E – Echo","F – Foxtrot","H – Hotel","I – India","A – Alpha","B – Bravo","C – Charlie","D – Delta","T – Tango","G – Golf","P – Papa","W – Whisky"]
+            Default: ="A – Alpha"
+            Visible: =IsBlank(gLoggedInTaxi)
+
+      - LoginErrorLbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =56
+            Y: =298
+            Width: =Parent.Width - 112
+            Height: =28
+            Text: =gLoginError
+            Size: =12
+            Color: =RGBA(220, 38, 38, 1)
+            VerticalAlign: =VerticalAlign.Middle
+            Visible: =IsBlank(gLoggedInTaxi) And !IsBlank(gLoginError) And gLoginError <> ""
+
+      - LoginSubmitBtn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =56
+            Y: =334
+            Width: =Parent.Width - 112
+            Height: =48
+            Text: ="🚕  Anmelden"
+            Size: =14
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(0, 70, 127, 1)
+            HoverFill: =RGBA(0, 90, 160, 1)
+            PressedFill: =RGBA(0, 55, 100, 1)
+            DisabledFill: =RGBA(156, 163, 175, 1)
+            BorderThickness: =0
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            Visible: =IsBlank(gLoggedInTaxi)
+            DisplayMode: =If(Len(Trim(LoginRadioInput.Text)) > 0, DisplayMode.Edit, DisplayMode.Disabled)
+            OnSelect: |
+              =// Zonen-Kürzel aus Dropdown-Auswahl extrahieren (Format "X – Label")
+              Set(gLoginZone, Left(LoginZoneDropdown.SelectedText.Value, 1));
+              Set(gTaxiPositionEdit, false);
+              Set(gLoginError, "");
+              // Prüfen ob Funknummer bereits aktiv
+              If(
+                  !IsBlank(LookUp(gTaxis, FunkID = Trim(LoginRadioInput.Text) And Active)),
+                  // Taxi reaktivieren / Position aktualisieren
+                  UpdateIf(gTaxis, FunkID = Trim(LoginRadioInput.Text),
+                      {Position: gLoginZone, Active: true, LastSeen: Text(Now(), "hh:mm")}),
+                  // Neues Taxi anlegen
+                  Collect(gTaxis, {
+                      ID:       gNextTaxiID,
+                      FunkID:   Trim(LoginRadioInput.Text),
+                      Position: gLoginZone,
+                      Capacity: 8,
+                      Occupied: 0,
+                      Active:   true,
+                      LastSeen: Text(Now(), "hh:mm")
+                  });
+                  Set(gNextTaxiID, gNextTaxiID + 1)
+              );
+              Set(gLoggedInTaxi, LookUp(gTaxis, FunkID = Trim(LoginRadioInput.Text)));
+              // Sortierten Trip-Pool initial aufbauen
+              Set(gTaxiIdx, LookUp(gZoneMap, zone = gLoggedInTaxi.Position, idx));
+              ClearCollect(gSortedTrips,
+                  Sort(
+                      AddColumns(
+                          Filter(gTrips, Status = "pending"),
+                          "Score",
+                          Abs(LookUp(gZoneMap, zone = PickupZone, idx) - gTaxiIdx) +
+                          Min(LookUp(gZoneMap, zone = PickupZone, idx), 11 - LookUp(gZoneMap, zone = PickupZone, idx)) * 0.5 +
+                          If((gTaxiIdx <= 4 And LookUp(gZoneMap, zone = PickupZone, idx) <= 4) Or
+                             (gTaxiIdx > 4  And LookUp(gZoneMap, zone = PickupZone, idx) > 4), 0, 2)
+                      ),
+                      Score, SortOrder.Ascending
+                  )
+              )
+
+      # ══════════════════════════════════════════════════════════════════════════
+      # ANSICHT 2: TAXI INFO-KARTE (wenn angemeldet)
+      # ══════════════════════════════════════════════════════════════════════════
+      - TaxiInfoCard:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =12
+            Y: =68
+            Width: =Parent.Width - 24
+            Height: =100
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(229, 231, 235, 1)
+            BorderThickness: =1
+            Visible: =!IsBlank(gLoggedInTaxi)
+
+      - TaxiInfoFunkLbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =76
+            Width: =200
+            Height: =28
+            Text: =If(!IsBlank(gLoggedInTaxi), gLoggedInTaxi.FunkID, "")
+            Size: =20
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(17, 24, 39, 1)
+            VerticalAlign: =VerticalAlign.Middle
+            Visible: =!IsBlank(gLoggedInTaxi)
+
+      - TaxiInfoPositionLbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =106
+            Width: =260
+            Height: =22
+            Text: =If(!IsBlank(gLoggedInTaxi), "📍 " & gLoggedInTaxi.Position & "  ·  " & LookUp(gZoneMap, zone = gLoggedInTaxi.Position, label), "")
+            Size: =12
+            Color: =RGBA(107, 114, 128, 1)
+            VerticalAlign: =VerticalAlign.Middle
+            Visible: =!IsBlank(gLoggedInTaxi)
+
+      - TaxiInfoOccupancyLbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 200
+            Y: =76
+            Width: =176
+            Height: =28
+            Text: =If(!IsBlank(gLoggedInTaxi), "👥 " & Text(gLoggedInTaxi.Occupied) & " / " & Text(gLoggedInTaxi.Capacity), "")
+            Size: =14
+            FontWeight: =FontWeight.Semibold
+            Color: =If(!IsBlank(gLoggedInTaxi) And gLoggedInTaxi.Occupied >= gLoggedInTaxi.Capacity, RGBA(220, 38, 38, 1), RGBA(17, 24, 39, 1))
+            Align: =Align.Right
+            VerticalAlign: =VerticalAlign.Middle
+            Visible: =!IsBlank(gLoggedInTaxi)
+
+      - TaxiInfoBarBg:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =Parent.Width - 200
+            Y: =112
+            Width: =176
+            Height: =8
+            Fill: =RGBA(243, 244, 246, 1)
+            BorderThickness: =0
+            Visible: =!IsBlank(gLoggedInTaxi)
+
+      - TaxiInfoBarFill:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =Parent.Width - 200
+            Y: =112
+            Width: =If(!IsBlank(gLoggedInTaxi), Max(4, 176 * Min(gLoggedInTaxi.Occupied / Max(1, gLoggedInTaxi.Capacity), 1)), 0)
+            Height: =8
+            Fill: =If(!IsBlank(gLoggedInTaxi) And gLoggedInTaxi.Occupied >= gLoggedInTaxi.Capacity, RGBA(220, 38, 38, 1),
+                   If(!IsBlank(gLoggedInTaxi) And gLoggedInTaxi.Occupied / Max(1, gLoggedInTaxi.Capacity) >= 0.75, RGBA(234, 179, 8, 1),
+                   RGBA(34, 197, 94, 1)))
+            BorderThickness: =0
+            Visible: =!IsBlank(gLoggedInTaxi)
+
+      - TaxiPositionToggleBtn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =24
+            Y: =132
+            Width: =176
+            Height: =28
+            Text: =If(gTaxiPositionEdit, "Abbrechen", "Standort aendern")
+            Size: =11
+            Color: =RGBA(55, 65, 81, 1)
+            Fill: =RGBA(243, 244, 246, 1)
+            HoverFill: =RGBA(229, 231, 235, 1)
+            BorderThickness: =0
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            Visible: =!IsBlank(gLoggedInTaxi) And IsBlank(gTripToComplete)
+            OnSelect: =Set(gTaxiPositionEdit, !gTaxiPositionEdit)
+
+      - TaxiPositionFormCard:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =12
+            Y: =178
+            Width: =Parent.Width - 24
+            Height: =132
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(229, 231, 235, 1)
+            BorderThickness: =1
+            Visible: =!IsBlank(gLoggedInTaxi) And gTaxiPositionEdit And IsBlank(gTripToComplete)
+
+      - TaxiPositionFormLbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =24
+            Y: =188
+            Width: =Parent.Width - 48
+            Height: =22
+            Text: ="Neuer Standort"
+            Size: =13
+            FontWeight: =FontWeight.Semibold
+            Color: =RGBA(55, 65, 81, 1)
+            VerticalAlign: =VerticalAlign.Middle
+            Visible: =!IsBlank(gLoggedInTaxi) And gTaxiPositionEdit And IsBlank(gTripToComplete)
+
+      - TaxiPositionDropdown:
+          Control: Classic/DropDown@2.3.1
+          Properties:
+            X: =24
+            Y: =214
+            Width: =Parent.Width - 48
+            Height: =44
+            Items: =["E – Echo","F – Foxtrot","H – Hotel","I – India","A – Alpha","B – Bravo","C – Charlie","D – Delta","T – Tango","G – Golf","P – Papa","W – Whisky"]
+            Default: =If(!IsBlank(gLoggedInTaxi), gLoggedInTaxi.Position & " – " & LookUp(gZoneMap, zone = gLoggedInTaxi.Position, label), "A – Alpha")
+            Visible: =!IsBlank(gLoggedInTaxi) And gTaxiPositionEdit And IsBlank(gTripToComplete)
+
+      - TaxiPositionConfirmBtn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =24
+            Y: =266
+            Width: =(Parent.Width - 60) / 2
+            Height: =32
+            Text: ="Bestaetigen"
+            Size: =12
+            FontWeight: =FontWeight.Semibold
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(0, 70, 127, 1)
+            HoverFill: =RGBA(0, 90, 160, 1)
+            PressedFill: =RGBA(0, 55, 100, 1)
+            BorderThickness: =0
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            Visible: =!IsBlank(gLoggedInTaxi) And gTaxiPositionEdit And IsBlank(gTripToComplete)
+            OnSelect: |
+              =Set(gTaxiNewZone, Left(TaxiPositionDropdown.SelectedText.Value, 1));
+              UpdateIf(gTaxis, ID = gLoggedInTaxi.ID,
+                  {Position: gTaxiNewZone,
+                   LastSeen: Text(Now(), "hh:mm")});
+              Set(gLoggedInTaxi, LookUp(gTaxis, ID = gLoggedInTaxi.ID));
+              Set(gTaxiIdx, LookUp(gZoneMap, zone = gTaxiNewZone, idx));
+              Set(gTaxiPositionEdit, false);
+              ClearCollect(gSortedTrips,
+                  Sort(
+                      AddColumns(
+                          Filter(gTrips,
+                              Status = "pending" Or
+                              (Status = "accepted"    And TaxiFunkID = gLoggedInTaxi.FunkID) Or
+                              (Status = "in_progress" And TaxiFunkID = gLoggedInTaxi.FunkID)
+                          ),
+                          "Score",
+                          If(Status = "pending",
+                              Abs(LookUp(gZoneMap, zone = PickupZone, idx) - gTaxiIdx) +
+                              Min(LookUp(gZoneMap, zone = PickupZone, idx), 11 - LookUp(gZoneMap, zone = PickupZone, idx)) * 0.5 +
+                              If((gTaxiIdx <= 4 And LookUp(gZoneMap, zone = PickupZone, idx) <= 4) Or
+                                 (gTaxiIdx > 4  And LookUp(gZoneMap, zone = PickupZone, idx) > 4), 0, 2),
+                              -1
+                          )
+                      ),
+                      Score,
+                      SortOrder.Ascending
+                  )
+              )
+
+      - TaxiPositionCancelBtn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =36 + (Parent.Width - 60) / 2
+            Y: =266
+            Width: =(Parent.Width - 60) / 2
+            Height: =32
+            Text: ="Abbrechen"
+            Size: =12
+            Color: =RGBA(55, 65, 81, 1)
+            Fill: =RGBA(243, 244, 246, 1)
+            HoverFill: =RGBA(229, 231, 235, 1)
+            BorderThickness: =0
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            Visible: =!IsBlank(gLoggedInTaxi) And gTaxiPositionEdit And IsBlank(gTripToComplete)
+            OnSelect: =Set(gTaxiPositionEdit, false)
+
+      # ── Trips-Listen-Titel ─────────────────────────────────────────────────────
+      - TripListSectionLbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =12
+            Y: =If(gTaxiPositionEdit, 320, 178)
+            Width: =Parent.Width - 152
+            Height: =24
+            Text: ="AUFTRÄGE  (" & Text(CountRows(gSortedTrips)) & ")"
+            Size: =11
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(107, 114, 128, 1)
+            VerticalAlign: =VerticalAlign.Middle
+            Visible: =!IsBlank(gLoggedInTaxi) And IsBlank(gTripToComplete)
+
+      - TripListRefreshBtn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =Parent.Width - 132
+            Y: =If(gTaxiPositionEdit, 318, 176)
+            Width: =120
+            Height: =28
+            Text: ="Aktualisieren"
+            Size: =11
+            Color: =RGBA(107, 114, 128, 1)
+            Fill: =RGBA(243, 244, 246, 1)
+            HoverFill: =RGBA(229, 231, 235, 1)
+            BorderThickness: =0
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            Visible: =!IsBlank(gLoggedInTaxi) And IsBlank(gTripToComplete)
+            OnSelect: |
+              =If(!IsBlank(gLoggedInTaxi),
+                  Set(gTaxiIdx, LookUp(gZoneMap, zone = gLoggedInTaxi.Position, idx));
+                  ClearCollect(gSortedTrips,
+                      Sort(
+                          AddColumns(
+                              Filter(gTrips,
+                                  Status = "pending" Or
+                                  (Status = "accepted"    And TaxiFunkID = gLoggedInTaxi.FunkID) Or
+                                  (Status = "in_progress" And TaxiFunkID = gLoggedInTaxi.FunkID)
+                              ),
+                              "Score",
+                              If(Status = "pending",
+                                  Abs(LookUp(gZoneMap, zone = PickupZone, idx) - gTaxiIdx) +
+                                  Min(LookUp(gZoneMap, zone = PickupZone, idx), 11 - LookUp(gZoneMap, zone = PickupZone, idx)) * 0.5 +
+                                  If((gTaxiIdx <= 4 And LookUp(gZoneMap, zone = PickupZone, idx) <= 4) Or
+                                     (gTaxiIdx > 4  And LookUp(gZoneMap, zone = PickupZone, idx) > 4), 0, 2),
+                                  -1
+                              )
+                          ),
+                          Score,
+                          SortOrder.Ascending
+                      )
+                  )
+              )
+
+      # ── Trips-Gallery (sortiert nach Prioritäts-Algorithmus) ──────────────────
+      - TripListGallery:
+          Control: Gallery@2.15.0
+          Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+          Properties:
+            X: =12
+            Y: =If(gTaxiPositionEdit, 346, 204)
+            Width: =Parent.Width - 24
+            Height: =If(gTaxiPositionEdit, Parent.Height - 354, Parent.Height - 212)
+            Items: =gSortedTrips
+            TemplateSize: =170
+            TemplatePadding: =8
+            ShowScrollbar: =true
+            Visible: =!IsBlank(gLoggedInTaxi) And IsBlank(gTripToComplete)
+          Children:
+            - TripCardRect:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =Parent.TemplateWidth
+                  Height: =Parent.TemplateHeight - 8
+                  Fill: =RGBA(255, 255, 255, 1)
+                  BorderColor: =If(ThisItem.OverflowWarning And ThisItem.Status = "pending", RGBA(252, 165, 165, 1), If(ThisItem.Status = "accepted" Or ThisItem.Status = "in_progress", RGBA(147, 197, 253, 1), RGBA(229, 231, 235, 1)))
+                  BorderThickness: =If(ThisItem.OverflowWarning Or ThisItem.Status = "accepted" Or ThisItem.Status = "in_progress", 2, 1)
+
+            - TripStatusBadge:
+                Control: Label@2.5.1
+                Properties:
+                  X: =Parent.TemplateWidth - 118
+                  Y: =10
+                  Width: =110
+                  Height: =24
+                  Text: =If(ThisItem.Status = "pending", "⏳ Ausstehend", If(ThisItem.Status = "accepted", "✓ Angenommen", "▶ Unterwegs"))
+                  Size: =10
+                  FontWeight: =FontWeight.Semibold
+                  Color: =If(ThisItem.Status = "pending", RGBA(133, 77, 14, 1), If(ThisItem.Status = "accepted", RGBA(30, 64, 175, 1), RGBA(6, 78, 59, 1)))
+                  Fill: =If(ThisItem.Status = "pending", RGBA(254, 249, 195, 1), If(ThisItem.Status = "accepted", RGBA(219, 234, 254, 1), RGBA(209, 250, 229, 1)))
+                  Align: =Align.Center
+                  VerticalAlign: =VerticalAlign.Middle
+
+            - TripRouteLbl:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12
+                  Y: =10
+                  Width: =Parent.TemplateWidth - 136
+                  Height: =24
+                  Text: =ThisItem.PickupZone & If(IsBlank(ThisItem.PickupDetail) Or ThisItem.PickupDetail = "", "", " (" & ThisItem.PickupDetail & ")") & "  →  " & ThisItem.DropoffZone
+                  Size: =15
+                  FontWeight: =FontWeight.Bold
+                  Color: =RGBA(17, 24, 39, 1)
+                  VerticalAlign: =VerticalAlign.Middle
+
+            - TripZoneNamesLbl:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12
+                  Y: =36
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =20
+                  Text: =LookUp(gZoneMap, zone = ThisItem.PickupZone, label) & "  →  " & LookUp(gZoneMap, zone = ThisItem.DropoffZone, label)
+                  Size: =12
+                  Color: =RGBA(107, 114, 128, 1)
+                  VerticalAlign: =VerticalAlign.Middle
+
+            - TripMetaLbl:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12
+                  Y: =58
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =20
+                  Text: ="👥 " & Text(ThisItem.Passengers) & " Personen  ·  🕐 " & ThisItem.RequestedAt & If(ThisItem.OverflowWarning, "  ⚠ Überlast!", "")
+                  Size: =12
+                  Color: =If(ThisItem.OverflowWarning, RGBA(185, 28, 28, 1), RGBA(107, 114, 128, 1))
+                  VerticalAlign: =VerticalAlign.Middle
+
+            # ETA-Anzeige (Minuten vom Taxi-Standort bis Abholort)
+            - TripETALbl:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12
+                  Y: =80
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =22
+                  Text: |
+                    =If(!IsBlank(gLoggedInTaxi),
+                      "⏱ ETA: " & If(
+                          Abs(LookUp(gZoneMap, zone = gLoggedInTaxi.Position, idx) - LookUp(gZoneMap, zone = ThisItem.PickupZone, idx)) = 0,
+                          "Bereits vor Ort",
+                          Text(Round(Abs(LookUp(gZoneMap, zone = gLoggedInTaxi.Position, idx) - LookUp(gZoneMap, zone = ThisItem.PickupZone, idx)) * 1.6, 0)) & " Min. bis Abholort"
+                      ),
+                      "")
+                  Size: =12
+                  FontWeight: =FontWeight.Semibold
+                  Color: =RGBA(37, 99, 235, 1)
+                  VerticalAlign: =VerticalAlign.Middle
+
+            # Überlast-Warnung
+            - TripOverflowWarnLbl:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12
+                  Y: =104
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =24
+                  Text: ="⚠ Kapazität überschritten – bewusste Übernahme möglich"
+                  Size: =11
+                  Color: =RGBA(185, 28, 28, 1)
+                  Fill: =RGBA(254, 242, 242, 1)
+                  VerticalAlign: =VerticalAlign.Middle
+                  Visible: =ThisItem.OverflowWarning And ThisItem.Status = "pending"
+
+            # Annehmen-Button (nur für pending Aufträge)
+            - TripAcceptBtn:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =12
+                  Y: =132
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =42
+                  Text: ="✓  Auftrag annehmen"
+                  Size: =13
+                  FontWeight: =FontWeight.Bold
+                  Color: =RGBA(255, 255, 255, 1)
+                  Fill: =RGBA(0, 70, 127, 1)
+                  HoverFill: =RGBA(0, 90, 160, 1)
+                  PressedFill: =RGBA(0, 55, 100, 1)
+                  BorderThickness: =0
+                  RadiusTopLeft: =8
+                  RadiusTopRight: =8
+                  RadiusBottomLeft: =8
+                  RadiusBottomRight: =8
+                  Visible: =ThisItem.Status = "pending"
+                  OnSelect: |
+                    =// ❗ Dataverse: Nutze Power Automate Flow "AcceptTrip" für atomare Updates
+                    // Demo: Direkt in Collections aktualisieren
+                    UpdateIf(gTrips, ID = ThisItem.ID And Status = "pending",
+                        {Status:     "accepted",
+                         TaxiFunkID: gLoggedInTaxi.FunkID,
+                         TaxiID:     gLoggedInTaxi.ID,
+                         TaxiPosition: gLoggedInTaxi.Position});
+                    UpdateIf(gTaxis, ID = gLoggedInTaxi.ID,
+                        {Occupied: Min(gLoggedInTaxi.Capacity, gLoggedInTaxi.Occupied + ThisItem.Passengers),
+                         LastSeen: Text(Now(), "hh:mm")});
+                    Set(gLoggedInTaxi, LookUp(gTaxis, ID = gLoggedInTaxi.ID));
+                    // Sortierten Pool neu aufbauen
+                    Set(gTaxiIdx, LookUp(gZoneMap, zone = gLoggedInTaxi.Position, idx));
+                    ClearCollect(gSortedTrips,
+                        Sort(
+                            AddColumns(
+                                Filter(gTrips,
+                                    Status = "pending" Or
+                                    (Status = "accepted"    And TaxiFunkID = gLoggedInTaxi.FunkID) Or
+                                    (Status = "in_progress" And TaxiFunkID = gLoggedInTaxi.FunkID)),
+                                "Score",
+                                If(Status = "pending",
+                                    Abs(LookUp(gZoneMap, zone = PickupZone, idx) - gTaxiIdx) +
+                                    Min(LookUp(gZoneMap, zone = PickupZone, idx), 11 - LookUp(gZoneMap, zone = PickupZone, idx)) * 0.5 +
+                                    If((gTaxiIdx <= 4 And LookUp(gZoneMap, zone = PickupZone, idx) <= 4) Or
+                                       (gTaxiIdx > 4  And LookUp(gZoneMap, zone = PickupZone, idx) > 4), 0, 2),
+                                    -1)
+                            ),
+                            Score, SortOrder.Ascending
+                        )
+                    )
+
+            # Abschliessen-Button (nur eigene accepted/in_progress Aufträge)
+            - TripCompleteBtn:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  X: =12
+                  Y: =132
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =42
+                  Text: ="📍  Abschliessen – Passagiere abgesetzt"
+                  Size: =13
+                  FontWeight: =FontWeight.Bold
+                  Color: =RGBA(255, 255, 255, 1)
+                  Fill: =RGBA(22, 163, 74, 1)
+                  HoverFill: =RGBA(21, 128, 61, 1)
+                  PressedFill: =RGBA(15, 100, 48, 1)
+                  BorderThickness: =0
+                  RadiusTopLeft: =8
+                  RadiusTopRight: =8
+                  RadiusBottomLeft: =8
+                  RadiusBottomRight: =8
+                  Visible: =(ThisItem.Status = "accepted" Or ThisItem.Status = "in_progress") And ThisItem.TaxiFunkID = gLoggedInTaxi.FunkID
+                  OnSelect: |
+                    =// Abschluss-Formular zeigen (Zone bestätigen)
+                    Set(gTripToComplete, ThisItem)
+
+      # ══════════════════════════════════════════════════════════════════════════
+      # ABSCHLUSS-FORMULAR (Modal-Overlay über der Gallerie)
+      # ══════════════════════════════════════════════════════════════════════════
+      - CompleteFormOverlay:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =0
+            Y: =56
+            Width: =Parent.Width
+            Height: =Parent.Height - 56
+            Fill: =RGBA(0, 0, 0, 0.4)
+            BorderThickness: =0
+            Visible: =!IsBlank(gTripToComplete)
+
+      - CompleteFormCard:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =24
+            Y: =140
+            Width: =Parent.Width - 48
+            Height: =380
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(229, 231, 235, 1)
+            BorderThickness: =1
+            Visible: =!IsBlank(gTripToComplete)
+
+      - CompleteFormTitle:
+          Control: Label@2.5.1
+          Properties:
+            X: =40
+            Y: =156
+            Width: =Parent.Width - 80
+            Height: =30
+            Text: ="Fahrt abschliessen"
+            Size: =17
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(17, 24, 39, 1)
+            VerticalAlign: =VerticalAlign.Middle
+            Visible: =!IsBlank(gTripToComplete)
+
+      - CompleteFormRouteLbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =40
+            Y: =190
+            Width: =Parent.Width - 80
+            Height: =24
+            Text: |
+              =If(!IsBlank(gTripToComplete), "Route: " & gTripToComplete.PickupZone & "  →  " & gTripToComplete.DropoffZone & "  |  👥 " & Text(gTripToComplete.Passengers) & " Pax", "")
+            Size: =13
+            Color: =RGBA(107, 114, 128, 1)
+            VerticalAlign: =VerticalAlign.Middle
+            Visible: =!IsBlank(gTripToComplete)
+
+      - CompleteZoneLbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =40
+            Y: =228
+            Width: =Parent.Width - 80
+            Height: =24
+            Text: ="Aktuellen Abgabeort bestätigen"
+            Size: =13
+            FontWeight: =FontWeight.Semibold
+            Color: =RGBA(55, 65, 81, 1)
+            VerticalAlign: =VerticalAlign.Middle
+            Visible: =!IsBlank(gTripToComplete)
+
+      - CompleteZoneDropdown:
+          Control: Classic/DropDown@2.3.1
+          Properties:
+            X: =40
+            Y: =254
+            Width: =Parent.Width - 80
+            Height: =44
+            Items: =["E – Echo","F – Foxtrot","H – Hotel","I – India","A – Alpha","B – Bravo","C – Charlie","D – Delta","T – Tango","G – Golf","P – Papa","W – Whisky"]
+            Default: =If(!IsBlank(gTripToComplete), gTripToComplete.DropoffZone & " – " & LookUp(gZoneMap, zone = gTripToComplete.DropoffZone, label), "A – Alpha")
+            Visible: =!IsBlank(gTripToComplete)
+
+      - CompleteConfirmBtn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =40
+            Y: =312
+            Width: =Parent.Width - 80
+            Height: =48
+            Text: ="✔  Abgeschlossen – Passagiere abgesetzt"
+            Size: =13
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(22, 163, 74, 1)
+            HoverFill: =RGBA(21, 128, 61, 1)
+            PressedFill: =RGBA(15, 100, 48, 1)
+            BorderThickness: =0
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            Visible: =!IsBlank(gTripToComplete)
+            OnSelect: |
+              =// ❗ Dataverse: Nutze Power Automate Flow "CompleteTrip"
+              Set(gCompleteZone, Left(CompleteZoneDropdown.SelectedText.Value, 1));
+              // Trip als abgeschlossen markieren
+              UpdateIf(gTrips, ID = gTripToComplete.ID,
+                  {Status: "completed", DropoffZone: gCompleteZone});
+              // Taxi-Auslastung reduzieren + neue Position setzen
+              UpdateIf(gTaxis, ID = gLoggedInTaxi.ID,
+                  {Occupied:  Max(0, gLoggedInTaxi.Occupied - gTripToComplete.Passengers),
+                   Position:  gCompleteZone,
+                   LastSeen:  Text(Now(), "hh:mm")});
+              Set(gLoggedInTaxi, LookUp(gTaxis, ID = gLoggedInTaxi.ID));
+              Set(gTripToComplete, Blank());
+              // Sortierten Pool neu aufbauen
+              Set(gTaxiIdx, LookUp(gZoneMap, zone = gLoggedInTaxi.Position, idx));
+              ClearCollect(gSortedTrips,
+                  Sort(
+                      AddColumns(
+                          Filter(gTrips,
+                              Status = "pending" Or
+                              (Status = "accepted"    And TaxiFunkID = gLoggedInTaxi.FunkID) Or
+                              (Status = "in_progress" And TaxiFunkID = gLoggedInTaxi.FunkID)),
+                          "Score",
+                          If(Status = "pending",
+                              Abs(LookUp(gZoneMap, zone = PickupZone, idx) - gTaxiIdx) +
+                              Min(LookUp(gZoneMap, zone = PickupZone, idx), 11 - LookUp(gZoneMap, zone = PickupZone, idx)) * 0.5 +
+                              If((gTaxiIdx <= 4 And LookUp(gZoneMap, zone = PickupZone, idx) <= 4) Or
+                                 (gTaxiIdx > 4  And LookUp(gZoneMap, zone = PickupZone, idx) > 4), 0, 2),
+                              -1)
+                      ),
+                      Score, SortOrder.Ascending
+                  )
+              )
+
+      - CompleteCancelBtn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =40
+            Y: =372
+            Width: =Parent.Width - 80
+            Height: =40
+            Text: ="Abbrechen"
+            Size: =13
+            Color: =RGBA(107, 114, 128, 1)
+            Fill: =RGBA(243, 244, 246, 1)
+            HoverFill: =RGBA(229, 231, 235, 1)
+            BorderThickness: =0
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            Visible: =!IsBlank(gTripToComplete)
+            OnSelect: =Set(gTripToComplete, Blank())
+      - StatusHeaderLabel:
+          Control: Label@2.5.1
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =80
+            Text: ="PETRA – Taxi Status"
+            Size: =22
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(0, 70, 127, 1)
+            Align: =Align.Center
+            VerticalAlign: =VerticalAlign.Middle
+      - TaxiCountLabel:
+          Control: Label@2.5.1
+          Properties:
+            X: =40
+            Y: =100
+            Width: =680
+            Height: =32
+            Text: |
+              ="Aktive Fahrzeuge: " & Text(CountRows(Filter(gTaxis, Active))) & " / " & Text(CountRows(gTaxis))
+            Size: =14
+            FontWeight: =FontWeight.Semibold
+            Color: =RGBA(50, 50, 50, 1)
+      - TaxiStatusGallery:
+          Control: Gallery@2.15.0
+          Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+          Properties:
+            X: =40
+            Y: =140
+            Width: =680
+            Height: =480
+            Items: =gTaxis
+            TemplateSize: =120
+            TemplatePadding: =8
+          Children:
+            - TaxiStatusCardRect:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =Parent.TemplateWidth
+                  Height: =Parent.TemplateHeight - 8
+                  Fill: =RGBA(255, 255, 255, 1)
+                  BorderColor: =If(ThisItem.Active, RGBA(0, 140, 60, 1), RGBA(200, 200, 200, 1))
+                  BorderThickness: =2
+            - TaxiFunkLabel:
+                Control: Label@2.5.1
+                Properties:
+                  X: =16
+                  Y: =10
+                  Width: =400
+                  Height: =32
+                  Text: =ThisItem.FunkID
+                  Size: =16
+                  FontWeight: =FontWeight.Bold
+                  Color: =RGBA(0, 70, 127, 1)
+            - TaxiStatusBadge:
+                Control: Label@2.5.1
+                Properties:
+                  X: =16
+                  Y: =46
+                  Width: =200
+                  Height: =28
+                  Text: =If(ThisItem.Active, "🟢 Aktiv", "🔴 Inaktiv")
+                  Size: =13
+                  Color: =If(ThisItem.Active, RGBA(0, 140, 60, 1), RGBA(200, 30, 30, 1))
+            - TaxiZoneLabel:
+                Control: Label@2.5.1
+                Properties:
+                  X: =16
+                  Y: =78
+                  Width: =300
+                  Height: =26
+                  Text: |
+                    ="Zone: " & ThisItem.Position & "  |  Freie Plätze: " & Text(ThisItem.Capacity - ThisItem.Occupied)
+                  Size: =13
+                  Color: =RGBA(70, 70, 70, 1)
+      - StatusBackButton:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =40
+            Y: =645
+            Width: =200
+            Height: =44
+            Text: ="← Dispatch"
+            Size: =13
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(100, 100, 180, 1)
+            HoverFill: =RGBA(120, 120, 200, 1)
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            OnSelect: =Navigate(DispatchScreen, ScreenTransition.Fade)
+      - StatusNavETAButton:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =260
+            Y: =645
+            Width: =200
+            Height: =44
+            Text: ="→ ETA"
+            Size: =13
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(70, 130, 180, 1)
+            HoverFill: =RGBA(90, 150, 200, 1)
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            OnSelect: =Navigate(EmployeeScreen, ScreenTransition.Fade)

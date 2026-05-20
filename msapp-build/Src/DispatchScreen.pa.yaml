@@ -1,0 +1,520 @@
+Screens:
+  DispatchScreen:
+    Properties:
+      Fill: =RGBA(245, 247, 250, 1)
+      OnVisible: |
+        =// ❗ Dataverse: ClearCollect(gTaxis, PetraTaxis); ClearCollect(gTrips, PetraTrips)
+        Set(gLastRefresh, Text(Now(), "[$-de-DE]hh:mm:ss"))
+    Children:
+
+      # ── Auto-Refresh Timer (10 s) ────────────────────────────────────────────
+      - DispatchTimer:
+          Control: Timer@2.1.0
+          Properties:
+            X: =0
+            Y: =0
+            Width: =0
+            Height: =0
+            Duration: =10000
+            Repeat: =true
+            AutoStart: =true
+            Visible: =false
+            OnTimerEnd: |
+              =// ❗ Dataverse: ClearCollect(gTaxis, PetraTaxis); ClearCollect(gTrips, PetraTrips)
+              Set(gLastRefresh, Text(Now(), "[$-de-DE]hh:mm:ss"))
+
+      # ── Header ────────────────────────────────────────────────────────────────
+      - DispatchHeaderBg:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =56
+            Fill: =RGBA(0, 70, 127, 1)
+            BorderThickness: =0
+
+      - DispatchBackBtn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =8
+            Y: =8
+            Width: =44
+            Height: =40
+            Text: ="←"
+            Size: =18
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(255, 255, 255, 0.15)
+            PressedFill: =RGBA(255, 255, 255, 0.25)
+            BorderThickness: =0
+            OnSelect: =Navigate(SelectRoleScreen, ScreenTransition.Fade)
+
+      - DispatchTitleLabel:
+          Control: Label@2.5.1
+          Properties:
+            X: =58
+            Y: =0
+            Width: =Parent.Width - 220
+            Height: =56
+            Text: ="📋  Disposition"
+            Size: =18
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(255, 255, 255, 1)
+            VerticalAlign: =VerticalAlign.Middle
+
+      - DispatchRefreshLabel:
+          Control: Label@2.5.1
+          Properties:
+            X: =Parent.Width - 180
+            Y: =0
+            Width: =172
+            Height: =56
+            Text: ="⟳ " & gLastRefresh
+            Size: =11
+            Color: =RGBA(147, 197, 253, 1)
+            Align: =Align.Right
+            VerticalAlign: =VerticalAlign.Middle
+
+      # ── Statistik-Karten (4er-Reihe) ─────────────────────────────────────────
+      - StatCard1Bg:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =12
+            Y: =66
+            Width: =(Parent.Width - 60) / 4
+            Height: =82
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(229, 231, 235, 1)
+            BorderThickness: =1
+
+      - StatCard1Value:
+          Control: Label@2.5.1
+          Properties:
+            X: =12
+            Y: =74
+            Width: =(Parent.Width - 60) / 4
+            Height: =38
+            Text: =Text(CountRows(gTrips))
+            Size: =24
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(17, 24, 39, 1)
+            Align: =Align.Center
+            VerticalAlign: =VerticalAlign.Middle
+
+      - StatCard1Lbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =12
+            Y: =112
+            Width: =(Parent.Width - 60) / 4
+            Height: =28
+            Text: ="Aufträge heute"
+            Size: =11
+            Color: =RGBA(107, 114, 128, 1)
+            Align: =Align.Center
+            VerticalAlign: =VerticalAlign.Middle
+
+      - StatCard2Bg:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =12 + (Parent.Width - 60) / 4 + 12
+            Y: =66
+            Width: =(Parent.Width - 60) / 4
+            Height: =82
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(229, 231, 235, 1)
+            BorderThickness: =1
+
+      - StatCard2Value:
+          Control: Label@2.5.1
+          Properties:
+            X: =12 + (Parent.Width - 60) / 4 + 12
+            Y: =74
+            Width: =(Parent.Width - 60) / 4
+            Height: =38
+            Text: =Text(CountRows(Filter(gTrips, Status = "pending")))
+            Size: =24
+            FontWeight: =FontWeight.Bold
+            Color: =If(CountRows(Filter(gTrips, Status = "pending")) > 0, RGBA(202, 138, 4, 1), RGBA(17, 24, 39, 1))
+            Align: =Align.Center
+            VerticalAlign: =VerticalAlign.Middle
+
+      - StatCard2Lbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =12 + (Parent.Width - 60) / 4 + 12
+            Y: =112
+            Width: =(Parent.Width - 60) / 4
+            Height: =28
+            Text: ="Ausstehend"
+            Size: =11
+            Color: =RGBA(107, 114, 128, 1)
+            Align: =Align.Center
+            VerticalAlign: =VerticalAlign.Middle
+
+      - StatCard3Bg:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =12 + (Parent.Width - 60) / 4 * 2 + 24
+            Y: =66
+            Width: =(Parent.Width - 60) / 4
+            Height: =82
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(229, 231, 235, 1)
+            BorderThickness: =1
+
+      - StatCard3Value:
+          Control: Label@2.5.1
+          Properties:
+            X: =12 + (Parent.Width - 60) / 4 * 2 + 24
+            Y: =74
+            Width: =(Parent.Width - 60) / 4
+            Height: =38
+            Text: =Text(CountRows(Filter(gTrips, Status = "completed")))
+            Size: =24
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(22, 101, 52, 1)
+            Align: =Align.Center
+            VerticalAlign: =VerticalAlign.Middle
+
+      - StatCard3Lbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =12 + (Parent.Width - 60) / 4 * 2 + 24
+            Y: =112
+            Width: =(Parent.Width - 60) / 4
+            Height: =28
+            Text: ="Abgeschlossen"
+            Size: =11
+            Color: =RGBA(107, 114, 128, 1)
+            Align: =Align.Center
+            VerticalAlign: =VerticalAlign.Middle
+
+      - StatCard4Bg:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =12 + (Parent.Width - 60) / 4 * 3 + 36
+            Y: =66
+            Width: =(Parent.Width - 60) / 4
+            Height: =82
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(229, 231, 235, 1)
+            BorderThickness: =1
+
+      - StatCard4Value:
+          Control: Label@2.5.1
+          Properties:
+            X: =12 + (Parent.Width - 60) / 4 * 3 + 36
+            Y: =74
+            Width: =(Parent.Width - 60) / 4
+            Height: =38
+            Text: =Text(Sum(gTrips, Passengers))
+            Size: =24
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(17, 24, 39, 1)
+            Align: =Align.Center
+            VerticalAlign: =VerticalAlign.Middle
+
+      - StatCard4Lbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =12 + (Parent.Width - 60) / 4 * 3 + 36
+            Y: =112
+            Width: =(Parent.Width - 60) / 4
+            Height: =28
+            Text: ="Personen bef."
+            Size: =11
+            Color: =RGBA(107, 114, 128, 1)
+            Align: =Align.Center
+            VerticalAlign: =VerticalAlign.Middle
+
+      # ── Linke Spalte: Aktive Taxis ─────────────────────────────────────────────
+      - TaxiSectionLbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =12
+            Y: =158
+            Width: =(Parent.Width - 36) / 2
+            Height: =24
+            Text: ="AKTIVE TAXIS  (" & Text(CountRows(Filter(gTaxis, Active))) & ")"
+            Size: =11
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(107, 114, 128, 1)
+            VerticalAlign: =VerticalAlign.Middle
+
+      - TaxiGallery:
+          Control: Gallery@2.15.0
+          Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+          Properties:
+            X: =12
+            Y: =184
+            Width: =(Parent.Width - 36) / 2
+            Height: =Parent.Height - 192
+            Items: =Filter(gTaxis, Active)
+            TemplateSize: =106
+            TemplatePadding: =6
+            ShowScrollbar: =true
+          Children:
+            - TaxiCardRect:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =Parent.TemplateWidth
+                  Height: =Parent.TemplateHeight - 6
+                  Fill: =RGBA(255, 255, 255, 1)
+                  BorderColor: =If(ThisItem.Occupied >= ThisItem.Capacity, RGBA(220, 38, 38, 0.5), RGBA(229, 231, 235, 1))
+                  BorderThickness: =1
+
+            - TaxiFunkLbl:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12
+                  Y: =8
+                  Width: =Parent.TemplateWidth - 120
+                  Height: =26
+                  Text: ="🚕  " & ThisItem.FunkID
+                  Size: =15
+                  FontWeight: =FontWeight.Bold
+                  Color: =RGBA(17, 24, 39, 1)
+                  VerticalAlign: =VerticalAlign.Middle
+
+            - TaxiLastSeenLbl:
+                Control: Label@2.5.1
+                Properties:
+                  X: =Parent.TemplateWidth - 108
+                  Y: =8
+                  Width: =100
+                  Height: =26
+                  Text: =ThisItem.LastSeen
+                  Size: =11
+                  Color: =RGBA(156, 163, 175, 1)
+                  Align: =Align.Right
+                  VerticalAlign: =VerticalAlign.Middle
+
+            - TaxiPositionLbl:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12
+                  Y: =34
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =22
+                  Text: ="📍 " & ThisItem.Position & "  ·  " & LookUp(gZoneMap, zone = ThisItem.Position, label)
+                  Size: =12
+                  Color: =RGBA(107, 114, 128, 1)
+                  VerticalAlign: =VerticalAlign.Middle
+
+            - TaxiOccupancyLbl:
+                Control: Label@2.5.1
+                Properties:
+                  X: =12
+                  Y: =56
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =20
+                  Text: ="👥  " & Text(ThisItem.Occupied) & " / " & Text(ThisItem.Capacity) & "  (" & If(ThisItem.Capacity - ThisItem.Occupied > 0, Text(ThisItem.Capacity - ThisItem.Occupied) & " frei", "voll") & ")"
+                  Size: =12
+                  Color: =If(ThisItem.Occupied >= ThisItem.Capacity, RGBA(220, 38, 38, 1), RGBA(107, 114, 128, 1))
+                  VerticalAlign: =VerticalAlign.Middle
+
+            - TaxiBarBg:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =12
+                  Y: =78
+                  Width: =Parent.TemplateWidth - 24
+                  Height: =8
+                  Fill: =RGBA(243, 244, 246, 1)
+                  BorderThickness: =0
+
+            - TaxiBarFill:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =12
+                  Y: =78
+                  Width: =Max(8, (Parent.TemplateWidth - 24) * Min(ThisItem.Occupied / Max(1, ThisItem.Capacity), 1))
+                  Height: =8
+                  Fill: =If(
+                    ThisItem.Occupied >= ThisItem.Capacity, RGBA(220, 38, 38, 1),
+                    ThisItem.Occupied / Max(1, ThisItem.Capacity) >= 0.75, RGBA(234, 179, 8, 1),
+                    RGBA(34, 197, 94, 1))
+                  BorderThickness: =0
+
+      # ── Rechte Spalte: Offene Aufträge ────────────────────────────────────────
+      - OpenTripsSectionLbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =(Parent.Width - 36) / 2 + 24
+            Y: =158
+            Width: =(Parent.Width - 36) / 2
+            Height: =24
+            Text: ="OFFENE AUFTRÄGE  (" & Text(CountRows(Filter(gTrips, Status = "pending" Or Status = "accepted" Or Status = "in_progress"))) & ")"
+            Size: =11
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(107, 114, 128, 1)
+            VerticalAlign: =VerticalAlign.Middle
+
+      - OpenTripsGallery:
+          Control: Gallery@2.15.0
+          Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+          Properties:
+            X: =(Parent.Width - 36) / 2 + 24
+            Y: =184
+            Width: =(Parent.Width - 36) / 2
+            Height: =(Parent.Height - 192) / 2 - 6
+            Items: =Filter(gTrips, Status = "pending" Or Status = "accepted" Or Status = "in_progress")
+            TemplateSize: =82
+            TemplatePadding: =4
+            ShowScrollbar: =true
+          Children:
+            - OpenTripCardRect:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =Parent.TemplateWidth
+                  Height: =Parent.TemplateHeight - 4
+                  Fill: =RGBA(255, 255, 255, 1)
+                  BorderColor: =If(ThisItem.OverflowWarning, RGBA(252, 165, 165, 1), RGBA(229, 231, 235, 1))
+                  BorderThickness: =If(ThisItem.OverflowWarning, 2, 1)
+
+            - OpenTripRouteLbl:
+                Control: Label@2.5.1
+                Properties:
+                  X: =10
+                  Y: =8
+                  Width: =Parent.TemplateWidth - 120
+                  Height: =24
+                  Text: =ThisItem.PickupZone & If(IsBlank(ThisItem.PickupDetail) Or ThisItem.PickupDetail = "", "", " (" & ThisItem.PickupDetail & ")") & "  →  " & ThisItem.DropoffZone
+                  Size: =13
+                  FontWeight: =FontWeight.Semibold
+                  Color: =RGBA(17, 24, 39, 1)
+                  VerticalAlign: =VerticalAlign.Middle
+
+            - OpenTripStatusBadge:
+                Control: Label@2.5.1
+                Properties:
+                  X: =Parent.TemplateWidth - 114
+                  Y: =8
+                  Width: =106
+                  Height: =24
+                  Text: =If(ThisItem.Status = "pending", "⏳ Ausstehend", If(ThisItem.Status = "accepted", "✓ Angenommen", "▶ Unterwegs"))
+                  Size: =10
+                  FontWeight: =FontWeight.Semibold
+                  Color: =If(ThisItem.Status = "pending", RGBA(133, 77, 14, 1), If(ThisItem.Status = "accepted", RGBA(30, 64, 175, 1), RGBA(6, 78, 59, 1)))
+                  Fill: =If(ThisItem.Status = "pending", RGBA(254, 249, 195, 1), If(ThisItem.Status = "accepted", RGBA(219, 234, 254, 1), RGBA(209, 250, 229, 1)))
+                  Align: =Align.Center
+                  VerticalAlign: =VerticalAlign.Middle
+
+            - OpenTripMetaLbl:
+                Control: Label@2.5.1
+                Properties:
+                  X: =10
+                  Y: =34
+                  Width: =Parent.TemplateWidth - 20
+                  Height: =20
+                  Text: ="👥 " & Text(ThisItem.Passengers) & " Pax" & If(IsBlank(ThisItem.TaxiFunkID) Or ThisItem.TaxiFunkID = "", "", "  ·  🚕 " & ThisItem.TaxiFunkID) & If(ThisItem.OverflowWarning, "  ⚠ Überlast", "")
+                  Size: =11
+                  Color: =If(ThisItem.OverflowWarning, RGBA(185, 28, 28, 1), RGBA(107, 114, 128, 1))
+                  VerticalAlign: =VerticalAlign.Middle
+
+            - OpenTripTimeLbl:
+                Control: Label@2.5.1
+                Properties:
+                  X: =10
+                  Y: =56
+                  Width: =Parent.TemplateWidth - 20
+                  Height: =18
+                  Text: ="🕐 " & ThisItem.RequestedAt
+                  Size: =11
+                  Color: =RGBA(156, 163, 175, 1)
+                  VerticalAlign: =VerticalAlign.Middle
+
+      # ── Rechte Spalte: Letzte Fahrten ─────────────────────────────────────────
+      - RecentSectionLbl:
+          Control: Label@2.5.1
+          Properties:
+            X: =(Parent.Width - 36) / 2 + 24
+            Y: =184 + (Parent.Height - 192) / 2
+            Width: =(Parent.Width - 36) / 2
+            Height: =24
+            Text: ="LETZTE FAHRTEN"
+            Size: =11
+            FontWeight: =FontWeight.Bold
+            Color: =RGBA(107, 114, 128, 1)
+            VerticalAlign: =VerticalAlign.Middle
+
+      - RecentTripsGallery:
+          Control: Gallery@2.15.0
+          Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+          Properties:
+            X: =(Parent.Width - 36) / 2 + 24
+            Y: =184 + (Parent.Height - 192) / 2 + 26
+            Width: =(Parent.Width - 36) / 2
+            Height: =(Parent.Height - 192) / 2 - 34
+            Items: =Sort(Filter(gTrips, Status = "completed" Or Status = "cancelled"), ID, SortOrder.Descending)
+            TemplateSize: =66
+            TemplatePadding: =4
+            ShowScrollbar: =true
+          Children:
+            - RecentCardRect:
+                Control: Rectangle@2.3.0
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =Parent.TemplateWidth
+                  Height: =Parent.TemplateHeight - 4
+                  Fill: =RGBA(255, 255, 255, 1)
+                  BorderColor: =RGBA(229, 231, 235, 1)
+                  BorderThickness: =1
+
+            - RecentStatusIcon:
+                Control: Label@2.5.1
+                Properties:
+                  X: =10
+                  Y: =8
+                  Width: =28
+                  Height: =48
+                  Text: =If(ThisItem.Status = "completed", "✔", "✕")
+                  Size: =18
+                  Color: =If(ThisItem.Status = "completed", RGBA(34, 197, 94, 1), RGBA(156, 163, 175, 1))
+                  Align: =Align.Center
+                  VerticalAlign: =VerticalAlign.Middle
+
+            - RecentRouteLbl:
+                Control: Label@2.5.1
+                Properties:
+                  X: =44
+                  Y: =8
+                  Width: =Parent.TemplateWidth - 160
+                  Height: =24
+                  Text: =ThisItem.PickupZone & "  →  " & ThisItem.DropoffZone
+                  Size: =13
+                  FontWeight: =FontWeight.Semibold
+                  Color: =RGBA(17, 24, 39, 1)
+                  VerticalAlign: =VerticalAlign.Middle
+
+            - RecentTaxiLbl:
+                Control: Label@2.5.1
+                Properties:
+                  X: =44
+                  Y: =32
+                  Width: =Parent.TemplateWidth - 160
+                  Height: =20
+                  Text: ="👥 " & Text(ThisItem.Passengers) & "  ·  🚕 " & If(IsBlank(ThisItem.TaxiFunkID) Or ThisItem.TaxiFunkID = "", "—", ThisItem.TaxiFunkID)
+                  Size: =11
+                  Color: =RGBA(107, 114, 128, 1)
+                  VerticalAlign: =VerticalAlign.Middle
+
+            - RecentTimeLbl:
+                Control: Label@2.5.1
+                Properties:
+                  X: =Parent.TemplateWidth - 110
+                  Y: =8
+                  Width: =102
+                  Height: =48
+                  Text: =ThisItem.RequestedAt
+                  Size: =11
+                  Color: =RGBA(156, 163, 175, 1)
+                  Align: =Align.Right
+                  VerticalAlign: =VerticalAlign.Middle
