@@ -1,7 +1,7 @@
 {
   "TopParent": {
     "Type": "ControlInfo",
-    "Name": "ETAScreen",
+    "Name": "SelectRoleScreen",
     "Template": {
       "Id": "http://microsoft.com/appmagic/screen",
       "Version": "1.0",
@@ -32,7 +32,7 @@
       {
         "Property": "Fill",
         "Category": "Design",
-        "InvariantScript": "RGBA(245, 247, 250, 1)",
+        "InvariantScript": "RGBA(255, 255, 255, 1)",
         "RuleProviderType": "Unknown"
       },
       {
@@ -74,13 +74,7 @@
       {
         "Property": "LoadingSpinnerColor",
         "Category": "Design",
-        "InvariantScript": "RGBA(56, 96, 178, 1)",
-        "RuleProviderType": "Unknown"
-      },
-      {
-        "Property": "AccessibleLabel",
-        "Category": "Accessibility",
-        "InvariantScript": "\"ETA\"",
+        "InvariantScript": "RGBA(0, 120, 212, 1)",
         "RuleProviderType": "Unknown"
       }
     ],
@@ -95,7 +89,7 @@
       "LoadingSpinnerColor"
     ],
     "IsLocked": false,
-    "ControlUniqueId": "11",
+    "ControlUniqueId": "4",
     "Children": []
   }
 }

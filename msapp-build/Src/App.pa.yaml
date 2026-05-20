@@ -2,20 +2,55 @@ App:
   Properties:
     Theme: =PowerAppsTheme
     OnStart: |
-      =// Demo-Daten für Airport Taxi Dispatch (PETRA)
+      =// ─────────────────────────────────────────────────────────────────────────
+      // PETRA – Vorfeld Taxi Dispatch System (ZRH)
+      // OnStart: Zonen-Map + Demo-Daten laden + globale Variablen initialisieren
+      // ❗ Für Dataverse-Betrieb: ClearCollect(gTaxis, PetraTaxis) etc. ersetzen
+      // ─────────────────────────────────────────────────────────────────────────
+
+      // Zonen-Map: Reihenfolge entspricht dem PHP-Algorithmus (E=0 … W=11)
       Set(gZoneMap, Table(
-          {zone:"E",idx:0},{zone:"F",idx:1},{zone:"H",idx:2},{zone:"I",idx:3},
-          {zone:"A",idx:4},{zone:"B",idx:5},{zone:"C",idx:6},{zone:"D",idx:7},
-          {zone:"T",idx:8},{zone:"G",idx:9},{zone:"P",idx:10},{zone:"W",idx:11}
+          {zone:"E", idx:0,  label:"Echo"},
+          {zone:"F", idx:1,  label:"Foxtrot"},
+          {zone:"H", idx:2,  label:"Hotel"},
+          {zone:"I", idx:3,  label:"India"},
+          {zone:"A", idx:4,  label:"Alpha"},
+          {zone:"B", idx:5,  label:"Bravo"},
+          {zone:"C", idx:6,  label:"Charlie"},
+          {zone:"D", idx:7,  label:"Delta"},
+          {zone:"T", idx:8,  label:"Tango"},
+          {zone:"G", idx:9,  label:"Golf"},
+          {zone:"P", idx:10, label:"Papa"},
+          {zone:"W", idx:11, label:"Whisky"}
       ));
-      ClearCollect(gTaxis, [
-          {ID:1,FunkID:"Taxi 1",Position:"E",Capacity:8,Occupied:0,Active:true},
-          {ID:2,FunkID:"Taxi 2",Position:"H",Capacity:8,Occupied:0,Active:true}
-      ]);
-      Set(gSelectedZone,"E");
-      Set(gPassengers,1);
-      Set(gBestTaxi,Blank());
-      Set(gETA,0);
-      Set(gVonZone,"E");
-      Set(gNachZone,"H");
-      Set(gETAResult,0);
+
+      // ── Taxi-Daten ─────────────────────────────────────────────────────────
+      // ❗ Dataverse: ClearCollect(gTaxis, PetraTaxis)
+      ClearCollect(gTaxis,
+          {ID:1, FunkID:"T1", Position:"A", Capacity:8, Occupied:2, Active:true,  LastSeen:"10:42"},
+          {ID:2, FunkID:"T2", Position:"E", Capacity:8, Occupied:0, Active:true,  LastSeen:"10:45"},
+          {ID:3, FunkID:"T3", Position:"W", Capacity:8, Occupied:6, Active:true,  LastSeen:"10:39"},
+          {ID:4, FunkID:"T4", Position:"C", Capacity:8, Occupied:4, Active:false, LastSeen:"10:22"}
+      );
+
+      // ── Auftrags-Daten ─────────────────────────────────────────────────────
+      // ❗ Dataverse: ClearCollect(gTrips, PetraTrips)
+      ClearCollect(gTrips,
+          {ID:1, PickupZone:"E", PickupDetail:"Pos 3", DropoffZone:"A", DropoffDetail:"",     Passengers:2, Status:"pending",     OverflowWarning:false, TaxiFunkID:"",  TaxiID:0, TaxiPosition:"", RequestedAt:"10:38"},
+          {ID:2, PickupZone:"F", PickupDetail:"",      DropoffZone:"W", DropoffDetail:"",     Passengers:3, Status:"accepted",    OverflowWarning:false, TaxiFunkID:"T2",TaxiID:2, TaxiPosition:"E", RequestedAt:"10:40"},
+          {ID:3, PickupZone:"D", PickupDetail:"",      DropoffZone:"E", DropoffDetail:"",     Passengers:1, Status:"pending",     OverflowWarning:false, TaxiFunkID:"",  TaxiID:0, TaxiPosition:"", RequestedAt:"10:41"},
+          {ID:4, PickupZone:"P", PickupDetail:"",      DropoffZone:"I", DropoffDetail:"",     Passengers:4, Status:"in_progress", OverflowWarning:false, TaxiFunkID:"T1",TaxiID:1, TaxiPosition:"A", RequestedAt:"10:35"},
+          {ID:5, PickupZone:"C", PickupDetail:"Gate 5",DropoffZone:"W", DropoffDetail:"",     Passengers:9, Status:"pending",     OverflowWarning:true,  TaxiFunkID:"",  TaxiID:0, TaxiPosition:"", RequestedAt:"10:44"},
+          {ID:6, PickupZone:"I", PickupDetail:"Pos 1", DropoffZone:"G", DropoffDetail:"",     Passengers:2, Status:"pending",     OverflowWarning:false, TaxiFunkID:"",  TaxiID:0, TaxiPosition:"", RequestedAt:"10:43"},
+          {ID:7, PickupZone:"B", PickupDetail:"",      DropoffZone:"H", DropoffDetail:"",     Passengers:2, Status:"completed",   OverflowWarning:false, TaxiFunkID:"T4",TaxiID:4, TaxiPosition:"C", RequestedAt:"10:20"},
+          {ID:8, PickupZone:"G", PickupDetail:"",      DropoffZone:"A", DropoffDetail:"",     Passengers:3, Status:"completed",   OverflowWarning:false, TaxiFunkID:"T3",TaxiID:3, TaxiPosition:"W", RequestedAt:"10:15"}
+      );
+
+      // ── Globale State-Variablen ────────────────────────────────────────────
+      Set(gLoggedInTaxi,  Blank()); // Angemeldetes Taxi (TaxiScreen)
+      Set(gActiveTrip,    Blank()); // Verfolgter Auftrag (EmployeeScreen)
+      Set(gTripToComplete,Blank()); // Auftrag der gerade abgeschlossen wird (TaxiScreen)
+      Set(gNextTripID,    9);       // Demo: nächste Trip-ID
+      Set(gNextTaxiID,    5);       // Demo: nächste Taxi-ID
+      Set(gLastRefresh,   Text(Now(), "[$-de-DE]hh:mm:ss"));
+      Set(gSortedTrips,   Blank());

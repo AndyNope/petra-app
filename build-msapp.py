@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Build script for the Petra Canvas App (.msapp)
-Generates Controls JSON for 3 screens and packs a new solution ZIP.
+Build script for the Petra Canvas App (.msapp).
+Keeps the SourceCode layout metadata in sync and packs a valid .msapp via pac.
 """
 
 import json
@@ -9,6 +9,7 @@ import os
 import zipfile
 import io
 import shutil
+import subprocess
 
 BUILD_DIR = os.path.dirname(os.path.abspath(__file__)) + "/msapp-build"
 SOLUTION_IN = os.path.dirname(os.path.abspath(__file__)) + "/powerapps-solution/Petra_1_0_0_0.zip"
@@ -16,25 +17,18 @@ SOLUTION_OUT = os.path.dirname(os.path.abspath(__file__)) + "/powerapps-solution
 MSAPP_NAME = "CanvasApps/petra_petra_5b88e_DocumentUri.msapp"
 
 
-def make_screen_control(name, unique_id, title=None, index=0):
+def make_screen_control(name, unique_id, index=0):
     """Return the TopParent JSON structure for a Screen."""
     rules = [
-        {"Property": "Fill", "Category": "Design", "InvariantScript": "RGBA(245, 247, 250, 1)", "RuleProviderType": "Unknown"},
+        {"Property": "Fill", "Category": "Design", "InvariantScript": "RGBA(255, 255, 255, 1)", "RuleProviderType": "Unknown"},
         {"Property": "ImagePosition", "Category": "Design", "InvariantScript": "ImagePosition.Fit", "RuleProviderType": "Unknown"},
         {"Property": "Height", "Category": "Design", "InvariantScript": "Max(App.Height, App.MinScreenHeight)", "RuleProviderType": "Unknown"},
         {"Property": "Width", "Category": "Design", "InvariantScript": "Max(App.Width, App.MinScreenWidth)", "RuleProviderType": "Unknown"},
         {"Property": "Size", "Category": "Design", "InvariantScript": "1 + CountRows(App.SizeBreakpoints) - CountIf(App.SizeBreakpoints, Value >= Self.Width)", "RuleProviderType": "Unknown"},
         {"Property": "Orientation", "Category": "Design", "InvariantScript": "If(Self.Width < Self.Height, Layout.Vertical, Layout.Horizontal)", "RuleProviderType": "Unknown"},
         {"Property": "LoadingSpinner", "Category": "Design", "InvariantScript": "LoadingSpinner.None", "RuleProviderType": "Unknown"},
-        {"Property": "LoadingSpinnerColor", "Category": "Design", "InvariantScript": "RGBA(56, 96, 178, 1)", "RuleProviderType": "Unknown"},
+        {"Property": "LoadingSpinnerColor", "Category": "Design", "InvariantScript": "RGBA(0, 120, 212, 1)", "RuleProviderType": "Unknown"},
     ]
-    if title:
-        rules.append({
-            "Property": "AccessibleLabel",
-            "Category": "Accessibility",
-            "InvariantScript": f"\"{title}\"",
-            "RuleProviderType": "Unknown"
-        })
 
     return {
         "TopParent": {
@@ -53,7 +47,7 @@ def make_screen_control(name, unique_id, title=None, index=0):
                 "OverridableProperties": {}
             },
             "Index": index,
-            "PublishOrderIndex": index,
+            "PublishOrderIndex": 0,
             "VariantName": "",
             "LayoutName": "",
             "MetaDataIDKey": "",
@@ -76,7 +70,7 @@ def make_screen_control(name, unique_id, title=None, index=0):
 
 
 def update_editor_state():
-    """Rewrite _EditorState.pa.yaml with the 3 new screens."""
+    """Rewrite _EditorState.pa.yaml with the current screen order."""
     content = """# ************************************************************************************************
 # Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
 # Use the maker portal to create and edit your Power Apps.
@@ -87,9 +81,10 @@ def update_editor_state():
 # ************************************************************************************************
 EditorState:
   ScreensOrder:
+    - SelectRoleScreen
     - DispatchScreen
-    - ETAScreen
-    - TaxiStatusScreen
+    - TaxiScreen
+    - EmployeeScreen
 """
     with open(os.path.join(BUILD_DIR, "Src", "_EditorState.pa.yaml"), "w", encoding="utf-8") as f:
         f.write(content)
@@ -99,10 +94,10 @@ EditorState:
 def update_header():
     """Update Header.json with current timestamp."""
     header = {
-        "DocVersion": "1.348",
-        "MinVersionToLoad": "1.348",
+        "DocVersion": "1.349",
+        "MinVersionToLoad": "1.349",
         "MSAppStructureVersion": "2.4.0",
-        "LastSavedDateTimeUTC": "03/01/2026 12:00:00",
+        "LastSavedDateTimeUTC": "05/20/2026 15:47:42",
         "AnalysisOptions": {
             "DataflowAnalysisEnabled": True,
             "DataflowAnalysisFlagStateToggledByUser": False
@@ -114,18 +109,86 @@ def update_header():
 
 
 def write_screen_controls():
-    """Write Controls/*.json for each of the 3 screens."""
+    """Write Controls/*.json for each screen defined in the source layout."""
     screens = [
-        ("DispatchScreen", 10, "Dispatch"),
-        ("ETAScreen", 11, "ETA"),
-        ("TaxiStatusScreen", 12, "Taxi Status"),
+        ("SelectRoleScreen", 4, 0),
+        ("DispatchScreen", 9, 1),
+        ("TaxiScreen", 14, 2),
+        ("EmployeeScreen", 19, 3),
     ]
-    for name, uid, title in screens:
-        ctrl = make_screen_control(name, uid, title)
+    for name, uid, index in screens:
+        ctrl = make_screen_control(name, uid, index=index)
         path = os.path.join(BUILD_DIR, "Controls", f"{uid}.json")
         with open(path, "w", encoding="utf-8") as f:
             json.dump(ctrl, f, indent=2)
         print(f"Wrote Controls/{uid}.json for {name}")
+
+
+def update_msapr():
+    """Rebuild the SourceCode manifest archive from current metadata files."""
+    msapr_path = os.path.join(BUILD_DIR, "petra.msapr")
+    msapr_header = {
+        "MsaprStructureVersion": "0.1",
+        "UnpackedConfiguration": {
+            "ContentTypes": ["PaYamlSourceCode"]
+        }
+    }
+
+    with zipfile.ZipFile(msapr_path, "w", zipfile.ZIP_DEFLATED) as zout:
+        zout.writestr("msapr-header.json", json.dumps(msapr_header, indent=2))
+
+        for root, dirs, files in os.walk(BUILD_DIR):
+            rel_root = os.path.relpath(root, BUILD_DIR)
+            if rel_root == "Src":
+                continue
+
+            for fname in files:
+                if fname in {"petra.msapr", "packed.json"}:
+                    continue
+
+                full_path = os.path.join(root, fname)
+                rel_path = os.path.relpath(full_path, BUILD_DIR).replace("\\", "/")
+                zout.write(full_path, f"msapp/{rel_path}")
+
+    print("Updated petra.msapr")
+
+
+def pack_msapp_with_pac(msapp_out):
+    """Pack the SourceCode layout into a valid .msapp using pac."""
+    pac_path = shutil.which("pac")
+    if not pac_path:
+        fallback = os.path.join(
+            os.environ.get("LOCALAPPDATA", ""),
+            "Microsoft",
+            "PowerAppsCLI",
+            "Microsoft.PowerApps.CLI.2.7.4",
+            "tools",
+            "pac.exe",
+        )
+        if os.path.exists(fallback):
+            pac_path = fallback
+        else:
+            raise RuntimeError("pac CLI not found in PATH. Install Power Platform CLI before building the .msapp.")
+
+    msapr_path = os.path.join(BUILD_DIR, "petra.msapr")
+    if not os.path.exists(msapr_path):
+        raise FileNotFoundError(f"Missing required SourceCode manifest: {msapr_path}")
+
+    subprocess.run(
+        [
+            pac_path,
+            "canvas",
+            "pack",
+            "--sources",
+            BUILD_DIR,
+            "--msapp",
+            msapp_out,
+            "--layout",
+            "SourceCode",
+            "--overwrite",
+        ],
+        check=True,
+    )
 
 
 def delete_old_screen1_files():
@@ -134,10 +197,11 @@ def delete_old_screen1_files():
     if os.path.exists(old_yaml):
         os.remove(old_yaml)
         print("Removed Src/Screen1.pa.yaml")
-    old_ctrl = os.path.join(BUILD_DIR, "Controls", "4.json")
-    if os.path.exists(old_ctrl):
-        os.remove(old_ctrl)
-        print("Removed Controls/4.json (old Screen1)")
+    for ctrl_name in ["4.json", "9.json", "10.json", "11.json", "12.json", "13.json", "14.json", "19.json"]:
+        old_ctrl = os.path.join(BUILD_DIR, "Controls", ctrl_name)
+        if os.path.exists(old_ctrl):
+            os.remove(old_ctrl)
+            print(f"Removed Controls/{ctrl_name}")
 
 
 def pack_msapp():
@@ -182,9 +246,24 @@ if __name__ == "__main__":
     update_editor_state()
     update_header()
     write_screen_controls()
-    print("\n=== Packing .msapp ===")
-    msapp_bytes = pack_msapp()
-    print(f"\nmsapp size: {len(msapp_bytes):,} bytes")
-    print("\n=== Packing solution ZIP ===")
-    pack_solution(msapp_bytes)
-    print("\n✅ Done! Import powerapps-solution/Petra_1_0_0_1.zip into Power Platform.")
+    update_msapr()
+
+    msapp_dir = os.path.dirname(os.path.abspath(__file__)) + "/powerapps-solution"
+    os.makedirs(msapp_dir, exist_ok=True)
+    msapp_out = msapp_dir + "/petra.msapp"
+
+    print("\n=== Packing .msapp with pac ===")
+    pack_msapp_with_pac(msapp_out)
+    msapp_size = os.path.getsize(msapp_out)
+    print(f"\nmsapp size: {msapp_size:,} bytes")
+    print(f"\nWrote .msapp: {msapp_out}")
+    print("  → In PowerApps Studio: Datei > Öffnen > Durchsuchen → petra.msapp")
+
+    if os.path.exists(SOLUTION_IN):
+        print("\n=== Packing solution ZIP ===")
+        with open(msapp_out, "rb") as f:
+            msapp_bytes = f.read()
+        pack_solution(msapp_bytes)
+        print("\n✅ Done! Import powerapps-solution/Petra_1_0_0_1.zip into Power Platform.")
+    else:
+        print("\n✅ Done! Importiere powerapps-solution/petra.msapp direkt in PowerApps.")

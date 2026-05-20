@@ -8,6 +8,7 @@
 # ************************************************************************************************
 EditorState:
   ScreensOrder:
+    - SelectRoleScreen
     - DispatchScreen
-    - ETAScreen
-    - TaxiStatusScreen
+    - TaxiScreen
+    - EmployeeScreen

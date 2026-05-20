@@ -81,6 +81,18 @@ oder im gleichen Webroot unter einem Unterordner.
 | PATCH   | /api/trips/{id}/cancel      | Auftrag stornieren                  |
 | GET     | /api/dispatch               | Dispo-Uebersicht (alle Daten)       |
 
+## Power Apps / Canvas App
+
+Der aktuelle Power-Apps-Stand liegt in `msapp-build/` und wird mit folgendem Befehl neu gebaut:
+
+```bash
+python build-msapp.py
+```
+
+Das erzeugte Canvas-App-Paket liegt danach unter `powerapps-solution/petra.msapp`.
+
+Wichtige Build-, Import- und SourceCode-Regeln stehen in `docs/powerapps-playbook.md`.
+
 ## Standort-Algorithmus
 
 Platzkette: `E – F – H – I – A – B – C – D – T – G – P – W`
