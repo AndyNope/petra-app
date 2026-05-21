@@ -53,4 +53,6 @@ App:
       Set(gNextTripID,    9);       // Demo: nächste Trip-ID
       Set(gNextTaxiID,    5);       // Demo: nächste Taxi-ID
       Set(gLastRefresh,   Text(Now(), "[$-de-DE]hh:mm:ss"));
+      Set(gEmployeePassengerCount, 1);
+      Set(gEmployeeFormError, "");
       Set(gSortedTrips,   Blank());
