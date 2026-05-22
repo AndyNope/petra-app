@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ImportExportXml version="9.2.26043.165" SolutionPackageVersion="9.2" languagecode="1033" generatedBy="CrmLive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.26043.165" OrganizationSchemaType="Standard" CRMServerServiceabilityVersion="9.2.26044.00163">
   <SolutionManifest>
-    <UniqueName>anp_PetraPlatform</UniqueName>
+    <UniqueName>anp_PetraFlowPlatform</UniqueName>
     <LocalizedNames>
-      <LocalizedName description="Petra Platform" languagecode="1033" />
+      <LocalizedName description="Petra Flow Platform" languagecode="1033" />
     </LocalizedNames>
     <Descriptions>
-      <Description description="Canvas app and Power Automate package for the Petra airport taxi dispatch workflow." languagecode="1033" />
+      <Description description="Canvas app package for the Petra airport taxi dispatch workflow using SharePoint and Power Automate flows." languagecode="1033" />
     </Descriptions>
-    <Version>1.0.0.0</Version>
+    <Version>1.1.0.0</Version>
     <Managed>0</Managed>
     <Publisher>
       <UniqueName>anp</UniqueName>
@@ -83,7 +83,6 @@
     </Publisher>
     <RootComponents>
       <RootComponent type="300" schemaName="anp_petra_a2d47" behavior="0" />
-      <RootComponent type="372" id="{2ab62012-9555-f111-a825-7c1e5251d90e}" schemaName="new_petra-20api" behavior="0" />
     </RootComponents>
     <MissingDependencies />
   </SolutionManifest>
