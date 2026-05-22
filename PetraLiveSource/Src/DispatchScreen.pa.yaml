@@ -11,40 +11,40 @@ Screens:
     Properties:
       Fill: =RGBA(245, 247, 250, 1)
         OnVisible: |
-        =ClearCollect(gTaxis,
-          ForAll(
-            Filter(PetraTaxis, Active = true),
-            {
-              ID: Value(ID),
-              FunkID: Coalesce(RadioId, ""),
-              Position: Coalesce(Position, ""),
-              Capacity: If(IsBlank(Capacity), 8, Value(Capacity)),
-              Occupied: If(IsBlank(Occupied), 0, Value(Occupied)),
-              Active: Coalesce(Active, false),
-              LastSeen: If(IsBlank(LastSeen), "", Text(LastSeen, "[$-de-DE]hh:mm"))
-            }
-          )
-        );
-        ClearCollect(gTrips,
-          ForAll(
-            PetraTrips,
-            {
-              ID: Value(ID),
-              PickupZone: Coalesce(PickupZone, ""),
-              PickupDetail: Coalesce(PickupDetail, ""),
-              DropoffZone: Coalesce(DropoffZone, ""),
-              DropoffDetail: Coalesce(DropoffDetail, ""),
-              Passengers: If(IsBlank(Passengers), 0, Value(Passengers)),
-              Status: Coalesce(Status, ""),
-              OverflowWarning: Coalesce(OverflowWarning, false),
-              TaxiFunkID: Coalesce(TaxiRadioId, ""),
-              TaxiID: If(IsBlank(TaxiId), 0, Value(TaxiId)),
-              TaxiPosition: Coalesce(TaxiPosition, ""),
-              RequestedAt: If(IsBlank(RequestedAt), "", Text(RequestedAt, "[$-de-DE]hh:mm"))
-            }
-          )
-        );
-        Set(gLastRefresh, Text(Now(), "[$-de-DE]hh:mm:ss"))
+          ClearCollect(gTaxis,
+            ForAll(
+              Filter(PetraTaxis, Active = true),
+              {
+                ID: Value(ID),
+                FunkID: Coalesce(RadioId, ""),
+                Position: Coalesce(Position, ""),
+                Capacity: If(IsBlank(Capacity), 8, Value(Capacity)),
+                Occupied: If(IsBlank(Occupied), 0, Value(Occupied)),
+                Active: Coalesce(Active, false),
+                LastSeen: If(IsBlank(LastSeen), "", Text(LastSeen, "[$-de-DE]hh:mm"))
+              }
+            )
+          );
+          ClearCollect(gTrips,
+            ForAll(
+              PetraTrips,
+              {
+                ID: Value(ID),
+                PickupZone: Coalesce(PickupZone, ""),
+                PickupDetail: Coalesce(PickupDetail, ""),
+                DropoffZone: Coalesce(DropoffZone, ""),
+                DropoffDetail: Coalesce(DropoffDetail, ""),
+                Passengers: If(IsBlank(Passengers), 0, Value(Passengers)),
+                Status: Coalesce(Status, ""),
+                OverflowWarning: Coalesce(OverflowWarning, false),
+                TaxiFunkID: Coalesce(TaxiRadioId, ""),
+                TaxiID: If(IsBlank(TaxiId), 0, Value(TaxiId)),
+                TaxiPosition: Coalesce(TaxiPosition, ""),
+                RequestedAt: If(IsBlank(RequestedAt), "", Text(RequestedAt, "[$-de-DE]hh:mm"))
+              }
+            )
+          );
+          Set(gLastRefresh, Text(Now(), "[$-de-DE]hh:mm:ss"))
     Children:
       - DispatchTimer:
           Control: Timer@2.1.0
