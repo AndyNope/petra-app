@@ -1,0 +1,243 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  SelectRoleScreen:
+    Properties:
+      Fill: =RGBA(245, 247, 250, 1)
+    Children:
+      - HeaderBg:
+          Control: Rectangle@2.3.0
+          Properties:
+            Fill: =RGBA(0, 70, 127, 1)
+            Height: =180
+            Width: =Parent.Width
+      - AppLogoLabel:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Color: =RGBA(255, 255, 255, 1)
+            FontWeight: =FontWeight.Bold
+            Height: =72
+            Size: =48
+            Text: ="PETRA"
+            Width: =Parent.Width
+            Y: =32
+      - AppSubtitleLabel:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Color: =RGBA(147, 197, 253, 1)
+            Height: =36
+            Text: ="Vorfeld Taxi Dispatch · ZRH Flughafen"
+            Width: =Parent.Width
+            Y: =108
+      - RolePromptLabel:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Color: =RGBA(107, 114, 128, 1)
+            FontWeight: =FontWeight.Semibold
+            Height: =34
+            Size: =14
+            Text: ="Bitte Rolle auswählen"
+            Width: =Parent.Width
+            Y: =194
+      - DispatchCardBg:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(219, 234, 254, 1)
+            BorderThickness: =2
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =164
+            Width: =Parent.Width - 80
+            X: =40
+            Y: =240
+      - DispatchIconLabel:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Height: =44
+            Size: =30
+            Text: |-
+              ="📋"
+            Width: =Parent.Width - 80
+            X: =40
+            Y: =256
+      - DispatchRoleTitle:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Color: =RGBA(0, 70, 127, 1)
+            FontWeight: =FontWeight.Bold
+            Height: =34
+            Size: =18
+            Text: ="Disposition"
+            Width: =Parent.Width - 80
+            X: =40
+            Y: =302
+      - DispatchRoleDesc:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Color: =RGBA(107, 114, 128, 1)
+            Height: =30
+            Size: =12
+            Text: ="Übersicht aller Taxis, Aufträge & Statistiken"
+            Width: =Parent.Width - 120
+            X: =60
+            Y: =338
+      - DispatchNavBtn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Fill: =RGBA(0, 0, 0, 0)
+            Height: =164
+            HoverFill: =RGBA(239, 246, 255, 0.6)
+            OnSelect: =Navigate(DispatchScreen, ScreenTransition.Fade)
+            PressedFill: =RGBA(219, 234, 254, 0.6)
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            Text: =""
+            Width: =Parent.Width - 80
+            X: =40
+            Y: =240
+      - TaxiCardBg:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(220, 252, 231, 1)
+            BorderThickness: =2
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =164
+            Width: =Parent.Width - 80
+            X: =40
+            Y: =424
+      - TaxiIconLabel:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Height: =44
+            Size: =30
+            Text: |-
+              ="🚕"
+            Width: =Parent.Width - 80
+            X: =40
+            Y: =440
+      - TaxiRoleTitle:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Color: =RGBA(22, 101, 52, 1)
+            FontWeight: =FontWeight.Bold
+            Height: =34
+            Size: =18
+            Text: ="Taxi-Fahrer"
+            Width: =Parent.Width - 80
+            X: =40
+            Y: =486
+      - TaxiRoleDesc:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Color: =RGBA(107, 114, 128, 1)
+            Height: =30
+            Size: =12
+            Text: ="Anmelden, Aufträge annehmen & abschliessen"
+            Width: =Parent.Width - 120
+            X: =60
+            Y: =522
+      - TaxiNavBtn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Fill: =RGBA(0, 0, 0, 0)
+            Height: =164
+            HoverFill: =RGBA(240, 253, 244, 0.6)
+            OnSelect: =Navigate(TaxiScreen, ScreenTransition.Fade)
+            PressedFill: =RGBA(220, 252, 231, 0.6)
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            Text: =""
+            Width: =Parent.Width - 80
+            X: =40
+            Y: =424
+      - EmployeeCardBg:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(254, 249, 195, 1)
+            BorderThickness: =2
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =164
+            Width: =Parent.Width - 80
+            X: =40
+            Y: =608
+      - EmployeeIconLabel:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Height: =44
+            Size: =30
+            Text: |-
+              ="👤"
+            Width: =Parent.Width - 80
+            X: =40
+            Y: =624
+      - EmployeeRoleTitle:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Color: =RGBA(92, 64, 14, 1)
+            FontWeight: =FontWeight.Bold
+            Height: =34
+            Size: =18
+            Text: ="Mitarbeiter"
+            Width: =Parent.Width - 80
+            X: =40
+            Y: =670
+      - EmployeeRoleDesc:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Color: =RGBA(107, 114, 128, 1)
+            Height: =30
+            Size: =12
+            Text: ="Taxi anfordern & Fahrtstatus verfolgen"
+            Width: =Parent.Width - 120
+            X: =60
+            Y: =706
+      - EmployeeNavBtn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Fill: =RGBA(0, 0, 0, 0)
+            Height: =164
+            HoverFill: =RGBA(254, 252, 232, 0.6)
+            OnSelect: =Navigate(EmployeeScreen, ScreenTransition.Fade)
+            PressedFill: =RGBA(254, 249, 195, 0.6)
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            Text: =""
+            Width: =Parent.Width - 80
+            X: =40
+            Y: =608
+      - FooterLabel:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Color: =RGBA(156, 163, 175, 1)
+            Height: =28
+            Size: =11
+            Text: ="© 2026 Flughafen Zürich · Demo-Modus"
+            Width: =Parent.Width
+            Y: =800

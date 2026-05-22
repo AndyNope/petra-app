@@ -1,0 +1,546 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  EmployeeScreen:
+    Properties:
+      Fill: =RGBA(245, 247, 250, 1)
+      OnVisible: |
+        =// Wenn ein aktiver Auftrag verfolgt wird: aktuellen Status nachladen
+        // ❗ Dataverse: If(!IsBlank(gActiveTrip), Set(gActiveTrip, LookUp(PetraTrips, ID = gActiveTrip.ID)))
+        Set(gLastRefresh, Text(Now(), "[$-de-DE]hh:mm:ss"))
+    Children:
+      - EmployeeRefreshTimer:
+          Control: Timer@2.1.0
+          Properties:
+            AutoStart: =true
+            Duration: =10000
+            Height: =0
+            OnTimerEnd: |
+              =If(!IsBlank(gActiveTrip),
+                  // ❗ Dataverse: Set(gActiveTrip, LookUp(PetraTrips, ID = gActiveTrip.ID))
+                  // Demo: aktuellen Status aus gTrips lesen
+                  Set(gActiveTrip, LookUp(gTrips, ID = gActiveTrip.ID));
+                  Set(gLastRefresh, Text(Now(), "[$-de-DE]hh:mm:ss"))
+              )
+            Repeat: =true
+            Visible: =false
+            Width: =0
+      - EmployeeHeaderBg:
+          Control: Rectangle@2.3.0
+          Properties:
+            Fill: =RGBA(0, 70, 127, 1)
+            Height: =56
+            Width: =Parent.Width
+      - EmployeeBackBtn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(255, 255, 255, 0.15)
+            OnSelect: =Navigate(SelectRoleScreen, ScreenTransition.Fade)
+            PressedFill: =RGBA(255, 255, 255, 0.25)
+            Size: =18
+            Text: ="←"
+            Width: =44
+            X: =8
+            Y: =8
+      - EmployeeTitleLabel:
+          Control: Label@2.5.1
+          Properties:
+            Color: =RGBA(255, 255, 255, 1)
+            FontWeight: =FontWeight.Bold
+            Height: =56
+            Size: =18
+            Text: |-
+              ="👤  Taxi anfordern"
+            Width: =Parent.Width - 80
+            X: =58
+      - FormCard:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(229, 231, 235, 1)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =530
+            Visible: =IsBlank(gActiveTrip)
+            Width: =Parent.Width - 32
+            X: =16
+            Y: =68
+      - PickupZoneLbl:
+          Control: Label@2.5.1
+          Properties:
+            Color: =RGBA(55, 65, 81, 1)
+            FontWeight: =FontWeight.Semibold
+            Height: =24
+            Text: ="Abholzone"
+            Visible: =IsBlank(gActiveTrip)
+            Width: =Parent.Width - 64
+            X: =32
+            Y: =84
+      - PickupZoneDropdown:
+          Control: Classic/DropDown@2.3.1
+          Properties:
+            Default: ="A – Alpha"
+            Height: =44
+            Items: =["E – Echo","F – Foxtrot","H – Hotel","I – India","A – Alpha","B – Bravo","C – Charlie","D – Delta","T – Tango","G – Golf","P – Papa","W – Whisky"]
+            Items.Value: =Value
+            Visible: =IsBlank(gActiveTrip)
+            Width: =Parent.Width - 64
+            X: =32
+            Y: =110
+      - PickupDetailLbl:
+          Control: Label@2.5.1
+          Properties:
+            Color: =RGBA(55, 65, 81, 1)
+            FontWeight: =FontWeight.Semibold
+            Height: =24
+            Text: ="Abholdetail  (optional, z. B. Pos 3)"
+            Visible: =IsBlank(gActiveTrip)
+            Width: =Parent.Width - 64
+            X: =32
+            Y: =162
+      - PickupDetailInput:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            BorderColor: =RGBA(209, 213, 219, 1)
+            BorderThickness: =1
+            FocusedBorderColor: =RGBA(59, 130, 246, 1)
+            Height: =44
+            HintText: ="z. B. Pos 3  (optional)"
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Size: =14
+            Visible: =IsBlank(gActiveTrip)
+            Width: =Parent.Width - 64
+            X: =32
+            Y: =188
+      - DropoffZoneLbl:
+          Control: Label@2.5.1
+          Properties:
+            Color: =RGBA(55, 65, 81, 1)
+            FontWeight: =FontWeight.Semibold
+            Height: =24
+            Text: ="Zielzone"
+            Visible: =IsBlank(gActiveTrip)
+            Width: =Parent.Width - 64
+            X: =32
+            Y: =242
+      - DropoffZoneDropdown:
+          Control: Classic/DropDown@2.3.1
+          Properties:
+            Default: ="B – Bravo"
+            Height: =44
+            Items: =["E – Echo","F – Foxtrot","H – Hotel","I – India","A – Alpha","B – Bravo","C – Charlie","D – Delta","T – Tango","G – Golf","P – Papa","W – Whisky"]
+            Items.Value: =Value
+            Visible: =IsBlank(gActiveTrip)
+            Width: =Parent.Width - 64
+            X: =32
+            Y: =268
+      - DropoffDetailLbl:
+          Control: Label@2.5.1
+          Properties:
+            Color: =RGBA(55, 65, 81, 1)
+            FontWeight: =FontWeight.Semibold
+            Height: =24
+            Text: ="Zieldetail  (optional)"
+            Visible: =IsBlank(gActiveTrip)
+            Width: =Parent.Width - 64
+            X: =32
+            Y: =320
+      - DropoffDetailInput:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            BorderColor: =RGBA(209, 213, 219, 1)
+            BorderThickness: =1
+            FocusedBorderColor: =RGBA(59, 130, 246, 1)
+            Height: =44
+            HintText: ="z. B. Gate 7  (optional)"
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Size: =14
+            Visible: =IsBlank(gActiveTrip)
+            Width: =Parent.Width - 64
+            X: =32
+            Y: =346
+      - PassengersLbl:
+          Control: Label@2.5.1
+          Properties:
+            Color: =RGBA(55, 65, 81, 1)
+            FontWeight: =FontWeight.Semibold
+            Height: =24
+            Text: |
+              ="Anzahl Personen:  " & Text(Round(PassengerSlider.Value, 0))
+            Visible: =IsBlank(gActiveTrip)
+            Width: =Parent.Width - 64
+            X: =32
+            Y: =400
+      - PassengerSlider:
+          Control: Classic/Slider@2.1.0
+          Properties:
+            Default: =1
+            Height: =44
+            Max: =16
+            Min: =1
+            ShowValue: =false
+            Visible: =IsBlank(gActiveTrip)
+            Width: =Parent.Width - 64
+            X: =32
+            Y: =426
+      - FormErrorLbl:
+          Control: Label@2.5.1
+          Properties:
+            Color: =RGBA(220, 38, 38, 1)
+            Fill: =RGBA(254, 242, 242, 1)
+            Height: =28
+            Size: =12
+            Text: =gEmployeeFormError
+            Visible: =IsBlank(gActiveTrip) And !IsBlank(gEmployeeFormError) And gEmployeeFormError <> ""
+            Width: =Parent.Width - 64
+            X: =32
+            Y: =476
+      - SubmitTripBtn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Color: =RGBA(255, 255, 255, 1)
+            DisabledFill: =RGBA(156, 163, 175, 1)
+            DisplayMode: =If( Left(PickupZoneDropdown.SelectedText.Value, 1) <> Left(DropoffZoneDropdown.SelectedText.Value, 1), DisplayMode.Edit, DisplayMode.Disabled)
+            Fill: =RGBA(0, 70, 127, 1)
+            FontWeight: =FontWeight.Bold
+            Height: =52
+            HoverFill: =RGBA(0, 90, 160, 1)
+            OnSelect: |
+              =// Validierung
+              Set(gEmployeeFormError, "");
+              If(Left(PickupZoneDropdown.SelectedText.Value, 1) = Left(DropoffZoneDropdown.SelectedText.Value, 1),
+                  Set(gEmployeeFormError, "Abholzone und Zielzone müssen verschieden sein.");
+                  false,
+                  // ❗ Dataverse: Collect(PetraTrips, {...}); Set(gActiveTrip, Last(PetraTrips))
+                  Collect(gTrips, {
+                      ID:             gNextTripID,
+                      PickupZone:     Left(PickupZoneDropdown.SelectedText.Value, 1),
+                      PickupDetail:   PickupDetailInput.Text,
+                      DropoffZone:    Left(DropoffZoneDropdown.SelectedText.Value, 1),
+                      DropoffDetail:  DropoffDetailInput.Text,
+                      Passengers:     Round(PassengerSlider.Value, 0),
+                      Status:         "pending",
+                      OverflowWarning: false,
+                      TaxiFunkID:     "",
+                      TaxiID:         0,
+                      TaxiPosition:   "",
+                      RequestedAt:    Text(Now(), "hh:mm")
+                  });
+                  Set(gNextTripID, gNextTripID + 1);
+                  Set(gActiveTrip, LookUp(gTrips, ID = gNextTripID - 1))
+              )
+            PressedFill: =RGBA(0, 55, 100, 1)
+            Text: |-
+              ="🚕  Taxi anfordern"
+            Visible: =IsBlank(gActiveTrip)
+            Width: =Parent.Width - 32
+            X: =16
+            Y: =612
+      - TripStatusCard:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =If(!IsBlank(gActiveTrip), If(gActiveTrip.Status = "pending",    RGBA(253, 230, 138, 1), If(gActiveTrip.Status = "accepted",   RGBA(147, 197, 253, 1), If(gActiveTrip.Status = "in_progress",RGBA(110, 231, 183, 1), If(gActiveTrip.Status = "completed",  RGBA(134, 239, 172, 1), RGBA(229, 231, 235, 1))))), RGBA(229, 231, 235, 1))
+            BorderThickness: =2
+            Fill: =If(!IsBlank(gActiveTrip), If(gActiveTrip.Status = "pending",    RGBA(254, 249, 195, 0.5), If(gActiveTrip.Status = "accepted",   RGBA(219, 234, 254, 0.5), If(gActiveTrip.Status = "in_progress",RGBA(209, 250, 229, 0.5), If(gActiveTrip.Status = "completed",  RGBA(220, 252, 231, 0.5), RGBA(243, 244, 246, 0.5))))), RGBA(255, 255, 255, 1))
+            Height: =136
+            Visible: =!IsBlank(gActiveTrip)
+            Width: =Parent.Width - 32
+            X: =16
+            Y: =68
+      - TripStatusIcon:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Height: =60
+            Size: =36
+            Text: |-
+              =If(!IsBlank(gActiveTrip), If(gActiveTrip.Status = "pending",    "⏳", If(gActiveTrip.Status = "accepted",   "🚕", If(gActiveTrip.Status = "in_progress","📍", If(gActiveTrip.Status = "completed",  "✅", "❌")))), "")
+            Visible: =!IsBlank(gActiveTrip)
+            Width: =60
+            X: =28
+            Y: =80
+      - TripStatusTextLbl:
+          Control: Label@2.5.1
+          Properties:
+            Color: =If(!IsBlank(gActiveTrip), If(gActiveTrip.Status = "pending",    RGBA(133, 77, 14, 1), If(gActiveTrip.Status = "accepted",   RGBA(30, 64, 175, 1), If(gActiveTrip.Status = "in_progress",RGBA(22, 101, 52, 1), If(gActiveTrip.Status = "completed",  RGBA(22, 101, 52, 1), RGBA(75, 85, 99, 1))))), RGBA(17, 24, 39, 1))
+            FontWeight: =FontWeight.Bold
+            Height: =32
+            Size: =15
+            Text: =If(!IsBlank(gActiveTrip), If(gActiveTrip.Status = "pending",     "Warte auf Taxifahrer…", If(gActiveTrip.Status = "accepted",    "Taxi ist unterwegs zu Ihnen.", If(gActiveTrip.Status = "in_progress", "Fahrt läuft.", If(gActiveTrip.Status = "completed",   "Fahrt abgeschlossen. Vielen Dank!", "Auftrag storniert.")))), "")
+            Visible: =!IsBlank(gActiveTrip)
+            Width: =Parent.Width - 128
+            X: =96
+            Y: =80
+      - TripStatusRefreshLbl:
+          Control: Label@2.5.1
+          Properties:
+            Color: =RGBA(156, 163, 175, 1)
+            Height: =20
+            Size: =11
+            Text: |
+              ="⟳ zuletzt: " & gLastRefresh
+            Visible: =!IsBlank(gActiveTrip) And (gActiveTrip.Status = "pending" Or gActiveTrip.Status = "accepted" Or gActiveTrip.Status = "in_progress")
+            Width: =Parent.Width - 128
+            X: =96
+            Y: =116
+      - TripDetailCard:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(229, 231, 235, 1)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =180
+            Visible: =!IsBlank(gActiveTrip)
+            Width: =Parent.Width - 32
+            X: =16
+            Y: =214
+      - TripDetailRouteLbl:
+          Control: Label@2.5.1
+          Properties:
+            Color: =RGBA(17, 24, 39, 1)
+            FontWeight: =FontWeight.Bold
+            Height: =28
+            Size: =16
+            Text: =If(!IsBlank(gActiveTrip), gActiveTrip.PickupZone & If(IsBlank(gActiveTrip.PickupDetail) Or gActiveTrip.PickupDetail = "", "", " (" & gActiveTrip.PickupDetail & ")") & "  →  " & gActiveTrip.DropoffZone & If(IsBlank(gActiveTrip.DropoffDetail) Or gActiveTrip.DropoffDetail = "", "", " (" & gActiveTrip.DropoffDetail & ")"), "")
+            Visible: =!IsBlank(gActiveTrip)
+            Width: =Parent.Width - 56
+            X: =28
+            Y: =224
+      - TripDetailZoneNamesLbl:
+          Control: Label@2.5.1
+          Properties:
+            Color: =RGBA(107, 114, 128, 1)
+            Height: =22
+            Size: =12
+            Text: =If(!IsBlank(gActiveTrip), LookUp(gZoneMap, zone = gActiveTrip.PickupZone, label) & "  →  " & LookUp(gZoneMap, zone = gActiveTrip.DropoffZone, label), "")
+            Visible: =!IsBlank(gActiveTrip)
+            Width: =Parent.Width - 56
+            X: =28
+            Y: =254
+      - TripDetailMetaLbl:
+          Control: Label@2.5.1
+          Properties:
+            Color: =RGBA(107, 114, 128, 1)
+            Height: =22
+            Size: =12
+            Text: |-
+              =If(!IsBlank(gActiveTrip), "👥 " & Text(gActiveTrip.Passengers) & " Personen  ·  🕐 " & gActiveTrip.RequestedAt, "")
+            Visible: =!IsBlank(gActiveTrip)
+            Width: =Parent.Width - 56
+            X: =28
+            Y: =278
+      - TripDetailTaxiLbl:
+          Control: Label@2.5.1
+          Properties:
+            Color: =If(!IsBlank(gActiveTrip) And !IsBlank(gActiveTrip.TaxiFunkID) And gActiveTrip.TaxiFunkID <> "", RGBA(37, 99, 235, 1), RGBA(107, 114, 128, 1))
+            FontWeight: =If(!IsBlank(gActiveTrip) And !IsBlank(gActiveTrip.TaxiFunkID) And gActiveTrip.TaxiFunkID <> "", FontWeight.Semibold, FontWeight.Normal)
+            Height: =22
+            Size: =12
+            Text: |
+              =If(!IsBlank(gActiveTrip) And !IsBlank(gActiveTrip.TaxiFunkID) And gActiveTrip.TaxiFunkID <> "", "🚕 Fahrzeug: " & gActiveTrip.TaxiFunkID, "🚕 Noch kein Fahrzeug zugewiesen")
+            Visible: =!IsBlank(gActiveTrip)
+            Width: =Parent.Width - 56
+            X: =28
+            Y: =302
+      - TripDetailETALbl:
+          Control: Label@2.5.1
+          Properties:
+            Color: =RGBA(37, 99, 235, 1)
+            FontWeight: =FontWeight.Semibold
+            Height: =24
+            Text: |
+              =If(!IsBlank(gActiveTrip) And gActiveTrip.Status = "accepted" And !IsBlank(gActiveTrip.TaxiPosition) And gActiveTrip.TaxiPosition <> "",
+                "⏱ ETA: " & If(
+                Abs(LookUp(gZoneMap, zone = gActiveTrip.TaxiPosition, idx) - LookUp(gZoneMap, zone = gActiveTrip.PickupZone, idx)) = 0,
+                "Taxi ist vor Ort",
+                Text(Round(Abs(LookUp(gZoneMap, zone = gActiveTrip.TaxiPosition, idx) - LookUp(gZoneMap, zone = gActiveTrip.PickupZone, idx)) * 1.6, 0)) & " Min. bis zu Ihnen"
+                ),
+                "")
+            Visible: =!IsBlank(gActiveTrip) And gActiveTrip.Status = "accepted" And !IsBlank(gActiveTrip.TaxiPosition) And gActiveTrip.TaxiPosition <> ""
+            Width: =Parent.Width - 56
+            X: =28
+            Y: =328
+      - NewTripBtn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =If(!IsBlank(gActiveTrip) And (gActiveTrip.Status = "completed" Or gActiveTrip.Status = "cancelled"), RGBA(0, 70, 127, 1), RGBA(220, 38, 38, 1))
+            FontWeight: =FontWeight.Bold
+            Height: =50
+            HoverFill: =If(!IsBlank(gActiveTrip) And (gActiveTrip.Status = "completed" Or gActiveTrip.Status = "cancelled"), RGBA(0, 90, 160, 1), RGBA(185, 28, 28, 1))
+            OnSelect: |
+              =If(!IsBlank(gActiveTrip) And gActiveTrip.Status = "pending",
+                  // Auftrag stornieren
+                  UpdateIf(gTrips, ID = gActiveTrip.ID, {Status: "cancelled"})
+              );
+              Set(gActiveTrip, Blank());
+              Set(gEmployeeFormError, "")
+            Size: =14
+            Text: =If(!IsBlank(gActiveTrip) And (gActiveTrip.Status = "completed" Or gActiveTrip.Status = "cancelled"), "✚  Neuen Auftrag erstellen", "✕  Auftrag stornieren")
+            Visible: =!IsBlank(gActiveTrip)
+            Width: =Parent.Width - 32
+            X: =16
+            Y: =410
+      - ETAHeaderLabel:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(0, 70, 127, 1)
+            FontWeight: =FontWeight.Bold
+            Height: =80
+            Size: =22
+            Text: ="PETRA – ETA Berechnung"
+            Width: =Parent.Width
+      - VonLabel:
+          Control: Label@2.5.1
+          Properties:
+            Color: =RGBA(50, 50, 50, 1)
+            FontWeight: =FontWeight.Semibold
+            Height: =36
+            Size: =14
+            Text: ="Von Zone:"
+            Width: =300
+            X: =40
+            Y: =110
+      - VonDropdown:
+          Control: Classic/DropDown@2.3.1
+          Properties:
+            Default: ="E"
+            Height: =44
+            Items: =["E","F","H","I","A","B","C","D","T","G","P","W"]
+            Items.Value: =Value
+            OnChange: =Set(gVonZone, VonDropdown.SelectedText.Value)
+            Width: =300
+            X: =40
+            Y: =150
+      - NachLabel:
+          Control: Label@2.5.1
+          Properties:
+            Color: =RGBA(50, 50, 50, 1)
+            FontWeight: =FontWeight.Semibold
+            Height: =36
+            Size: =14
+            Text: ="Nach Zone:"
+            Width: =300
+            X: =40
+            Y: =215
+      - NachDropdown:
+          Control: Classic/DropDown@2.3.1
+          Properties:
+            Default: ="H"
+            Height: =44
+            Items: =["E","F","H","I","A","B","C","D","T","G","P","W"]
+            Items.Value: =Value
+            OnChange: =Set(gNachZone, NachDropdown.SelectedText.Value)
+            Width: =300
+            X: =40
+            Y: =255
+      - ETAButton:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(0, 70, 127, 1)
+            FontWeight: =FontWeight.Bold
+            Height: =52
+            HoverFill: =RGBA(0, 90, 160, 1)
+            OnSelect: |
+              =Set(gETAResult,
+                  Round(
+                      Abs(
+                          LookUp(gZoneMap, zone = VonDropdown.SelectedText.Value, idx) -
+                          LookUp(gZoneMap, zone = NachDropdown.SelectedText.Value, idx)
+                      ) * 0.8 / 30 * 60,
+                  0)
+              )
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            Text: ="⏱ ETA Berechnen"
+            Width: =300
+            X: =40
+            Y: =325
+      - ETAResultCard:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(200, 210, 220, 1)
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =120
+            Width: =640
+            X: =40
+            Y: =400
+      - ETARouteLabel:
+          Control: Label@2.5.1
+          Properties:
+            Color: =RGBA(50, 50, 50, 1)
+            FontWeight: =FontWeight.Semibold
+            Height: =30
+            Text: |
+              ="Route: Zone " & VonDropdown.SelectedText.Value & " → Zone " & NachDropdown.SelectedText.Value
+            Width: =600
+            X: =60
+            Y: =415
+      - ETAResultLabel:
+          Control: Label@2.5.1
+          Properties:
+            Color: =RGBA(0, 70, 127, 1)
+            FontWeight: =FontWeight.Bold
+            Height: =52
+            Size: =18
+            Text: |
+              ="Geschätzte Fahrzeit: " & Text(gETAResult) & " Minuten"
+            Width: =600
+            X: =60
+            Y: =451
+      - ETABackButton:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(100, 100, 180, 1)
+            Height: =44
+            HoverFill: =RGBA(120, 120, 200, 1)
+            OnSelect: =Navigate(DispatchScreen, ScreenTransition.Fade)
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            Size: =13
+            Text: ="← Dispatch"
+            Width: =200
+            X: =40
+            Y: =550
+      - ETANavTaxiButton:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(70, 130, 180, 1)
+            Height: =44
+            HoverFill: =RGBA(90, 150, 200, 1)
+            OnSelect: =Navigate(TaxiScreen, ScreenTransition.Fade)
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            Size: =13
+            Text: ="→ Taxi-Status"
+            Width: =200
+            X: =260
+            Y: =550

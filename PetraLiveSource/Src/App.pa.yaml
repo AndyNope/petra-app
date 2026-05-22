@@ -1,0 +1,79 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+App:
+  Properties:
+    OnStart: |
+      =// ─────────────────────────────────────────────────────────────────────────
+      // PETRA – Vorfeld Taxi Dispatch System (ZRH)
+      // OnStart: Zonen-Map + Demo-Daten laden + globale Variablen initialisieren
+      // ❗ Für Dataverse-Betrieb: ClearCollect(gTaxis, PetraTaxis) etc. ersetzen
+      // ─────────────────────────────────────────────────────────────────────────
+
+      // Zonen-Map: Reihenfolge entspricht dem PHP-Algorithmus (E=0 … W=11)
+      Set(gZoneMap, Table(
+          {zone:"E", idx:0,  label:"Echo"},
+          {zone:"F", idx:1,  label:"Foxtrot"},
+          {zone:"H", idx:2,  label:"Hotel"},
+          {zone:"I", idx:3,  label:"India"},
+          {zone:"A", idx:4,  label:"Alpha"},
+          {zone:"B", idx:5,  label:"Bravo"},
+          {zone:"C", idx:6,  label:"Charlie"},
+          {zone:"D", idx:7,  label:"Delta"},
+          {zone:"T", idx:8,  label:"Tango"},
+          {zone:"G", idx:9,  label:"Golf"},
+          {zone:"P", idx:10, label:"Papa"},
+          {zone:"W", idx:11, label:"Whisky"}
+      ));
+
+        // ── Taxi-Daten ─────────────────────────────────────────────────────────
+        ClearCollect(gTaxis,
+          ForAll(
+            Filter(PetraTaxis, Active = true),
+            {
+              ID: Value(ID),
+              FunkID: Coalesce(RadioId, ""),
+              Position: Coalesce(Position, ""),
+              Capacity: If(IsBlank(Capacity), 8, Value(Capacity)),
+              Occupied: If(IsBlank(Occupied), 0, Value(Occupied)),
+              Active: Coalesce(Active, false),
+              LastSeen: If(IsBlank(LastSeen), "", Text(LastSeen, "[$-de-DE]hh:mm"))
+            }
+          )
+        );
+
+        // ── Auftrags-Daten ─────────────────────────────────────────────────────
+        ClearCollect(gTrips,
+          ForAll(
+            PetraTrips,
+            {
+              ID: Value(ID),
+              PickupZone: Coalesce(PickupZone, ""),
+              PickupDetail: Coalesce(PickupDetail, ""),
+              DropoffZone: Coalesce(DropoffZone, ""),
+              DropoffDetail: Coalesce(DropoffDetail, ""),
+              Passengers: If(IsBlank(Passengers), 0, Value(Passengers)),
+              Status: Coalesce(Status, ""),
+              OverflowWarning: Coalesce(OverflowWarning, false),
+              TaxiFunkID: Coalesce(TaxiRadioId, ""),
+              TaxiID: If(IsBlank(TaxiId), 0, Value(TaxiId)),
+              TaxiPosition: Coalesce(TaxiPosition, ""),
+              RequestedAt: If(IsBlank(RequestedAt), "", Text(RequestedAt, "[$-de-DE]hh:mm"))
+            }
+          )
+        );
+
+      // ── Globale State-Variablen ────────────────────────────────────────────
+      Set(gLoggedInTaxi,  Blank()); // Angemeldetes Taxi (TaxiScreen)
+      Set(gActiveTrip,    Blank()); // Verfolgter Auftrag (EmployeeScreen)
+      Set(gTripToComplete,Blank()); // Auftrag der gerade abgeschlossen wird (TaxiScreen)
+      Set(gNextTripID,    9);       // Demo: nächste Trip-ID
+      Set(gNextTaxiID,    5);       // Demo: nächste Taxi-ID
+      Set(gLastRefresh,   Text(Now(), "[$-de-DE]hh:mm:ss"));
+      Set(gSortedTrips,   Blank());
+    Theme: =PowerAppsTheme

@@ -1,6 +1,13 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
 App:
   Properties:
-    Theme: =PowerAppsTheme
     OnStart: |
       =// ─────────────────────────────────────────────────────────────────────────
       // PETRA – Vorfeld Taxi Dispatch System (ZRH)
@@ -53,6 +60,5 @@ App:
       Set(gNextTripID,    9);       // Demo: nächste Trip-ID
       Set(gNextTaxiID,    5);       // Demo: nächste Taxi-ID
       Set(gLastRefresh,   Text(Now(), "[$-de-DE]hh:mm:ss"));
-      Set(gEmployeePassengerCount, 1);
-      Set(gEmployeeFormError, "");
       Set(gSortedTrips,   Blank());
+    Theme: =PowerAppsTheme
